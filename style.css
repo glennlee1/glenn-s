@@ -723,6 +723,72 @@ body.modal-open {
   gap: 12px;
 }
 
+.module-editor {
+  padding: 14px 0 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.module-editor-heading,
+.module-name-row {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.module-editor-heading {
+  margin-bottom: 12px;
+}
+
+.module-editor-heading h3 {
+  margin: 0;
+  color: var(--brand);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.module-editor-heading label,
+.module-name-row label {
+  min-width: 0;
+  display: grid;
+  flex: 1 1 auto;
+  gap: 5px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.module-editor-heading label {
+  max-width: 310px;
+}
+
+#moduleSelect,
+#moduleNameInput {
+  width: 100%;
+  height: 40px;
+  min-width: 0;
+  padding: 0 10px;
+  color: var(--text);
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  outline: 0;
+}
+
+#moduleSelect:focus,
+#moduleNameInput:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 1px var(--focus);
+}
+
+.module-name-row label {
+  flex: 1 1 auto;
+}
+
+.module-name-row .secondary-button {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
 .icon-button {
   width: 34px;
   height: 34px;
@@ -1144,6 +1210,21 @@ input:focus-visible {
   .identity-editor-heading {
     display: grid;
     gap: 2px;
+  }
+
+  .module-editor-heading,
+  .module-name-row {
+    align-items: stretch;
+    display: grid;
+    gap: 9px;
+  }
+
+  .module-editor-heading label {
+    max-width: none;
+  }
+
+  .module-name-row .secondary-button {
+    justify-self: start;
   }
 }
 

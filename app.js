@@ -6,6 +6,7 @@
     engine: "glenn-home-search-engine",
     apps: "glenn-home-common-apps",
     identity: "glenn-home-identity",
+    navigation: "glenn-home-navigation",
   };
   var DEFAULT_TITLE = "Glenn导航";
   var config = window.siteConfig && typeof window.siteConfig === "object"
@@ -46,6 +47,10 @@
     appEditorReset: document.getElementById("appEditorReset"),
     appEditorList: document.getElementById("appEditorList"),
     appEditorStatus: document.getElementById("appEditorStatus"),
+    moduleSelect: document.getElementById("moduleSelect"),
+    moduleNameInput: document.getElementById("moduleNameInput"),
+    moduleNameSave: document.getElementById("moduleNameSave"),
+    appEditorListTitle: document.getElementById("appEditorListTitle"),
     siteIdentityForm: document.getElementById("siteIdentityForm"),
     siteNameInput: document.getElementById("siteNameInput"),
     siteAvatarInput: document.getElementById("siteAvatarInput"),
@@ -145,31 +150,69 @@
   var defaultCommonApps = asArray(config.commonApps)
     .map(validLink)
     .filter(Boolean);
-  var commonApps = [];
+  var defaultNavigationGroups = [
+    { id: "common", name: "常用软件", links: defaultCommonApps },
+  ];
+  asArray(catalog.categories).forEach(function (category, index) {
+    if (!category || typeof category !== "object") {
+      return;
+    }
+
+    defaultNavigationGroups.push({
+      id: "category-" + index,
+      name: asText(category.name, "未命名分类"),
+      links: asArray(category.links).map(validLink).filter(Boolean),
+    });
+  });
+
+  var navigationGroups = [];
+  var editingGroupIndex = 0;
   var editingAppIndex = -1;
   var editorReturnFocus = null;
 
-  function readCommonApps() {
-    var saved = readStorage(STORAGE_KEYS.apps);
+  function cloneNavigationGroups(groups) {
+    return groups.map(function (group, index) {
+      group = group && typeof group === "object" ? group : {};
+      return {
+        id: asText(group.id, "group-" + index),
+        name: asText(group.name, "未命名分类"),
+        links: asArray(group.links).map(validLink).filter(Boolean),
+      };
+    });
+  }
+
+  function readNavigationGroups() {
+    var saved = readStorage(STORAGE_KEYS.navigation);
     if (saved === null) {
-      return defaultCommonApps.slice();
+      var legacyApps = readStorage(STORAGE_KEYS.apps);
+      if (legacyApps !== null) {
+        try {
+          var parsedLegacyApps = JSON.parse(legacyApps);
+          if (Array.isArray(parsedLegacyApps)) {
+            var migratedGroups = cloneNavigationGroups(defaultNavigationGroups);
+            migratedGroups[0].links = parsedLegacyApps.map(validLink).filter(Boolean);
+            return migratedGroups;
+          }
+        } catch (error) {
+          // Fall back to the configured defaults below.
+        }
+      }
+      return cloneNavigationGroups(defaultNavigationGroups);
     }
 
     try {
       var parsed = JSON.parse(saved);
-      return Array.isArray(parsed)
-        ? parsed.map(validLink).filter(Boolean)
-        : defaultCommonApps.slice();
+      return Array.isArray(parsed) ? cloneNavigationGroups(parsed) : cloneNavigationGroups(defaultNavigationGroups);
     } catch (error) {
-      return defaultCommonApps.slice();
+      return cloneNavigationGroups(defaultNavigationGroups);
     }
   }
 
-  function persistCommonApps() {
-    writeStorage(STORAGE_KEYS.apps, JSON.stringify(commonApps));
+  function persistNavigationGroups() {
+    writeStorage(STORAGE_KEYS.navigation, JSON.stringify(navigationGroups));
   }
 
-  commonApps = readCommonApps();
+  navigationGroups = readNavigationGroups();
 
   var defaultIdentity = {
     title: asText(config.title, DEFAULT_TITLE),
@@ -261,7 +304,7 @@
     return link;
   }
 
-  function createNavigationGroup(name, items, editable) {
+  function createNavigationGroup(name, items, editable, groupIndex) {
     var section = document.createElement("section");
     var heading = document.createElement("h2");
     var list = document.createElement("ul");
@@ -279,8 +322,9 @@
       headingRow.className = "navigation-title-row";
       editButton.type = "button";
       editButton.className = "navigation-edit";
-      editButton.title = "编辑常用软件";
-      editButton.setAttribute("aria-label", "编辑常用软件");
+      editButton.title = "编辑" + asText(name, "导航模块");
+      editButton.setAttribute("aria-label", "编辑" + asText(name, "导航模块"));
+      editButton.dataset.groupIndex = String(groupIndex);
       editButton.innerHTML =
         '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>';
       editButton.addEventListener("click", openAppEditor);
@@ -318,17 +362,9 @@
   function renderNavigation() {
     var fragment = document.createDocumentFragment();
 
-    fragment.appendChild(
-      createNavigationGroup("常用软件", commonApps, true)
-    );
-
-    asArray(catalog.categories).forEach(function (category) {
-      if (!category || typeof category !== "object") {
-        return;
-      }
-
+    navigationGroups.forEach(function (group, index) {
       fragment.appendChild(
-        createNavigationGroup(category.name, category.links)
+        createNavigationGroup(group.name, group.links, true, index)
       );
     });
 
@@ -340,6 +376,37 @@
     elements.siteAvatarPreview.src = siteIdentity.avatar;
     elements.siteAvatarInput.value = "";
     pendingAvatar = siteIdentity.avatar;
+  }
+
+  function currentNavigationGroup() {
+    return navigationGroups[editingGroupIndex] || null;
+  }
+
+  function renderModuleSelector() {
+    var currentValue = String(editingGroupIndex);
+    var fragment = document.createDocumentFragment();
+
+    navigationGroups.forEach(function (group, index) {
+      var option = document.createElement("option");
+      option.value = String(index);
+      option.textContent = group.name;
+      fragment.appendChild(option);
+    });
+
+    elements.moduleSelect.replaceChildren(fragment);
+    elements.moduleSelect.value = currentValue;
+  }
+
+  function renderModuleEditor() {
+    var group = currentNavigationGroup();
+    if (!group) {
+      return;
+    }
+
+    renderModuleSelector();
+    elements.moduleNameInput.value = group.name;
+    elements.appEditorListTitle.textContent = "当前模块：" + group.name;
+    renderAppEditorList();
   }
 
   function prepareAvatar(file, onComplete) {
@@ -439,15 +506,17 @@
 
   function renderAppEditorList() {
     var fragment = document.createDocumentFragment();
+    var group = currentNavigationGroup();
+    var links = group ? group.links : [];
 
-    if (!commonApps.length) {
+    if (!links.length) {
       var empty = document.createElement("li");
       empty.className = "app-editor-empty";
-      empty.textContent = "还没有添加软件";
+      empty.textContent = "还没有添加网址";
       fragment.appendChild(empty);
     }
 
-    commonApps.forEach(function (app, index) {
+    links.forEach(function (app, index) {
       var item = document.createElement("li");
       var details = document.createElement("div");
       var name = document.createElement("strong");
@@ -491,11 +560,18 @@
     elements.appEditorList.replaceChildren(fragment);
   }
 
-  function openAppEditor() {
+  function openAppEditor(event) {
+    var trigger = event && event.currentTarget;
+    var groupIndex = trigger && trigger.dataset.groupIndex;
+
+    if (groupIndex !== undefined && navigationGroups[Number(groupIndex)]) {
+      editingGroupIndex = Number(groupIndex);
+    }
+
     editorReturnFocus = document.activeElement;
     resetAppEditorForm();
     renderIdentityEditor();
-    renderAppEditorList();
+    renderModuleEditor();
     elements.appEditor.hidden = false;
     document.body.classList.add("modal-open");
     elements.appNameInput.focus();
@@ -517,7 +593,8 @@
   }
 
   function startEditingApp(index) {
-    var app = commonApps[index];
+    var group = currentNavigationGroup();
+    var app = group && group.links[index];
     if (!app) {
       return;
     }
@@ -532,28 +609,36 @@
   }
 
   function deleteApp(index) {
-    var app = commonApps[index];
+    var group = currentNavigationGroup();
+    var app = group && group.links[index];
     if (!app || !window.confirm("确定删除“" + app.name + "”吗？")) {
       return;
     }
 
-    commonApps.splice(index, 1);
-    persistCommonApps();
+    group.links.splice(index, 1);
+    persistNavigationGroups();
     renderNavigation();
-    renderAppEditorList();
+    renderModuleEditor();
     resetAppEditorForm();
     setEditorStatus("已删除");
   }
 
-  function restoreDefaultApps() {
-    if (!window.confirm("恢复默认推荐会覆盖当前常用软件，确定继续吗？")) {
+  function restoreDefaultGroup() {
+    var group = currentNavigationGroup();
+    var defaultGroup = defaultNavigationGroups[editingGroupIndex];
+    if (!group || !defaultGroup) {
       return;
     }
 
-    commonApps = defaultCommonApps.slice();
-    persistCommonApps();
+    if (!window.confirm("恢复“" + group.name + "”的默认推荐会覆盖当前内容，确定继续吗？")) {
+      return;
+    }
+
+    group.name = defaultGroup.name;
+    group.links = defaultGroup.links.map(validLink).filter(Boolean);
+    persistNavigationGroups();
     renderNavigation();
-    renderAppEditorList();
+    renderModuleEditor();
     resetAppEditorForm();
     setEditorStatus("已恢复默认推荐");
   }
@@ -575,21 +660,58 @@
       return;
     }
 
+    var group = currentNavigationGroup();
+    if (!group) {
+      setEditorStatus("当前模块不可用，请重新打开编辑器", true);
+      return;
+    }
+
     var app = { name: name, url: url };
     var statusMessage = "";
-    if (editingAppIndex >= 0 && commonApps[editingAppIndex]) {
-      commonApps[editingAppIndex] = app;
+    if (editingAppIndex >= 0 && group.links[editingAppIndex]) {
+      group.links[editingAppIndex] = app;
       statusMessage = "已保存修改";
     } else {
-      commonApps.push(app);
+      group.links.push(app);
       statusMessage = "已添加到导航";
     }
 
-    persistCommonApps();
+    persistNavigationGroups();
     renderNavigation();
-    renderAppEditorList();
+    renderModuleEditor();
     resetAppEditorForm();
     setEditorStatus(statusMessage);
+  }
+
+  function selectNavigationGroup(index) {
+    if (!navigationGroups[index]) {
+      return;
+    }
+
+    editingGroupIndex = index;
+    resetAppEditorForm();
+    renderModuleEditor();
+  }
+
+  function saveModuleName() {
+    var group = currentNavigationGroup();
+    var name = elements.moduleNameInput.value.trim();
+
+    if (!group) {
+      return;
+    }
+
+    if (!name) {
+      setEditorStatus("请填写模块名称", true);
+      elements.moduleNameInput.focus();
+      return;
+    }
+
+    group.name = name;
+    persistNavigationGroups();
+    renderNavigation();
+    renderModuleEditor();
+    setEditorStatus("已保存模块名称");
   }
 
   function handleAppEditorListClick(event) {
@@ -950,9 +1072,13 @@
     elements.siteIdentityReset.addEventListener("click", resetIdentityEditor);
     elements.appEditorForm.addEventListener("submit", handleAppEditorSubmit);
     elements.appEditorList.addEventListener("click", handleAppEditorListClick);
+    elements.moduleSelect.addEventListener("change", function () {
+      selectNavigationGroup(Number(elements.moduleSelect.value));
+    });
+    elements.moduleNameSave.addEventListener("click", saveModuleName);
     elements.appEditorClose.addEventListener("click", closeAppEditor);
     elements.appEditorCancel.addEventListener("click", resetAppEditorForm);
-    elements.appEditorReset.addEventListener("click", restoreDefaultApps);
+    elements.appEditorReset.addEventListener("click", restoreDefaultGroup);
     elements.appEditor.addEventListener("click", function (event) {
       if (event.target.closest("[data-editor-close]")) {
         closeAppEditor();

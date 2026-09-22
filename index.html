@@ -30,7 +30,7 @@
         document.documentElement.dataset.theme = theme;
       })();
     </script>
-    <link rel="stylesheet" href="./style.css?v=5" />
+    <link rel="stylesheet" href="./style.css?v=6" />
   </head>
   <body>
     <a class="skip-link" href="#searchInput">跳到搜索框</a>
@@ -107,11 +107,11 @@
               </div>
 
               <p id="searchStatus" class="sr-only" aria-live="polite"></p>
-              <div class="search-featured" aria-label="豆包入口">
+              <div class="search-featured" aria-label="摸鱼小游戏入口">
                 <span aria-hidden="true">↗</span>
-                <strong>要不问问豆包？</strong>
-                <a href="https://www.doubao.com/" target="_blank" rel="noopener noreferrer">主页</a>
-                <a href="https://www.doubao.com/chat/" target="_blank" rel="noopener noreferrer">对话</a>
+                <strong>想摸鱼？玩个小游戏吧！</strong>
+                <a href="https://www.crazygames.com/" target="_blank" rel="noopener noreferrer">CrazyGames</a>
+                <a href="https://poki.com/" target="_blank" rel="noopener noreferrer">Poki</a>
               </div>
             </div>
 
@@ -174,6 +174,23 @@
               </form>
             </section>
 
+            <section class="module-editor" aria-labelledby="moduleEditorTitle">
+              <div class="module-editor-heading">
+                <h3 id="moduleEditorTitle">导航模块</h3>
+                <label>
+                  <span>选择模块</span>
+                  <select id="moduleSelect" name="module"></select>
+                </label>
+              </div>
+              <div class="module-name-row">
+                <label>
+                  <span>模块名称</span>
+                  <input id="moduleNameInput" type="text" maxlength="30" autocomplete="off" />
+                </label>
+                <button id="moduleNameSave" class="secondary-button" type="button">保存模块名</button>
+              </div>
+            </section>
+
             <form id="appEditorForm" class="app-editor-form" novalidate>
               <div class="app-editor-fields">
                 <label>
@@ -193,7 +210,7 @@
             </form>
 
             <div class="app-editor-list-header">
-              <span>当前导航</span>
+              <span id="appEditorListTitle">当前模块</span>
               <button id="appEditorReset" class="text-button" type="button">恢复默认</button>
             </div>
             <ul id="appEditorList" class="app-editor-list"></ul>
@@ -215,8 +232,8 @@
       <p class="noscript-message">此页面需要启用 JavaScript 才能显示导航内容。</p>
     </noscript>
 
-    <script src="./config.js?v=5" defer></script>
-    <script src="./catalog.js?v=5" defer></script>
-    <script src="./app.js?v=5" defer></script>
+    <script src="./config.js?v=6" defer></script>
+    <script src="./catalog.js?v=6" defer></script>
+    <script src="./app.js?v=6" defer></script>
   </body>
 </html>
