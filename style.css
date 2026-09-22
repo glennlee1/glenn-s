@@ -236,6 +236,25 @@ input:disabled {
   line-height: 1;
 }
 
+.engine-badge.has-icon,
+.engine-option-badge.has-icon {
+  padding: 0;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+.engine-icon {
+  width: 25px;
+  height: 25px;
+  display: block;
+  object-fit: contain;
+}
+
+.engine-badge.has-icon .engine-icon {
+  width: 30px;
+  height: 30px;
+}
+
 .search-input {
   flex: 1 1 auto;
   width: 100%;

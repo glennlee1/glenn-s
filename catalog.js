@@ -6,6 +6,7 @@
       {
         id: "baidu",
         name: "百度",
+        icon: "./assets/search-icons/baidu.ico",
         badge: "百",
         badgeColor: "#ffffff",
         badgeBackground: "#4e6ef2",
@@ -14,6 +15,7 @@
       {
         id: "google",
         name: "谷歌",
+        icon: "./assets/search-icons/google.ico",
         badge: "G",
         badgeColor: "#ffffff",
         badgeBackground: "#4285f4",
@@ -22,6 +24,7 @@
       {
         id: "bing",
         name: "必应",
+        icon: "./assets/search-icons/bing.ico",
         badge: "B",
         badgeColor: "#ffffff",
         badgeBackground: "#008373",
@@ -30,6 +33,7 @@
       {
         id: "so",
         name: "360",
+        icon: "./assets/search-icons/so.png",
         badge: "360",
         badgeColor: "#ffffff",
         badgeBackground: "#19b955",
@@ -38,6 +42,7 @@
       {
         id: "duckduckgo",
         name: "DuckDuckGo",
+        icon: "./assets/search-icons/duckduckgo.png",
         badge: "D",
         badgeColor: "#ffffff",
         badgeBackground: "#de5833",
@@ -46,6 +51,7 @@
       {
         id: "sogou",
         name: "搜狗",
+        icon: "./assets/search-icons/sogou.ico",
         badge: "搜",
         badgeColor: "#ffffff",
         badgeBackground: "#ff6347",
@@ -54,6 +60,7 @@
       {
         id: "zhihu",
         name: "知乎",
+        icon: "./assets/search-icons/zhihu.ico",
         badge: "知",
         badgeColor: "#ffffff",
         badgeBackground: "#1772f6",
@@ -62,6 +69,7 @@
       {
         id: "youdao",
         name: "有道",
+        icon: "./assets/search-icons/youdao.png",
         badge: "有",
         badgeColor: "#ffffff",
         badgeBackground: "#e74c3c",
@@ -70,6 +78,7 @@
       {
         id: "bilibili",
         name: "B站",
+        icon: "./assets/search-icons/bilibili.ico",
         badge: "B",
         badgeColor: "#ffffff",
         badgeBackground: "#00aeec",
@@ -78,6 +87,7 @@
       {
         id: "csdn",
         name: "CSDN",
+        icon: "./assets/search-icons/csdn.ico",
         badge: "C",
         badgeColor: "#ffffff",
         badgeBackground: "#fc5531",
@@ -86,6 +96,7 @@
       {
         id: "github",
         name: "GitHub",
+        icon: "./assets/search-icons/github.svg",
         badge: "GH",
         badgeColor: "#ffffff",
         badgeBackground: "#24292f",
@@ -94,6 +105,7 @@
       {
         id: "stackoverflow",
         name: "Stack Overflow",
+        icon: "./assets/search-icons/stackoverflow.ico",
         badge: "SO",
         badgeColor: "#ffffff",
         badgeBackground: "#f48024",
@@ -102,6 +114,7 @@
       {
         id: "google-scholar",
         name: "谷歌学术",
+        icon: "./assets/search-icons/google-scholar.ico",
         badge: "学",
         badgeColor: "#ffffff",
         badgeBackground: "#4285f4",
@@ -110,6 +123,7 @@
       {
         id: "baidu-scholar",
         name: "百度学术",
+        icon: "./assets/search-icons/baidu-scholar.ico",
         badge: "百",
         badgeColor: "#ffffff",
         badgeBackground: "#5c78ff",
@@ -118,6 +132,7 @@
       {
         id: "semantic-scholar",
         name: "Semantic Scholar",
+        icon: "./assets/search-icons/semantic-scholar.ico",
         badge: "SS",
         badgeColor: "#ffffff",
         badgeBackground: "#1857b6",

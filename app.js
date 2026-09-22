@@ -73,6 +73,27 @@
     }
   }
 
+  function safeAssetUrl(value) {
+    if (typeof value !== "string" || !value.trim()) {
+      return null;
+    }
+
+    try {
+      var url = new URL(value.trim(), document.baseURI);
+      if (url.protocol === "http:" || url.protocol === "https:") {
+        return url.href;
+      }
+
+      if (url.protocol === "file:" && window.location.protocol === "file:") {
+        return url.href;
+      }
+    } catch (error) {
+      return null;
+    }
+
+    return null;
+  }
+
   function validLink(item) {
     if (!item || typeof item !== "object") {
       return null;
@@ -102,6 +123,7 @@
     return {
       id: asText(engine.id, "engine-" + index),
       name: asText(engine.name, "搜索"),
+      icon: safeAssetUrl(engine.icon),
       badge: asText(engine.badge, "搜"),
       badgeColor: asText(engine.badgeColor, "#ffffff"),
       badgeBackground: asText(engine.badgeBackground, "#459df5"),
@@ -196,9 +218,37 @@
   }
 
   function applyBadgeStyle(node, engine) {
-    node.textContent = engine.badge;
+    node.dataset.engineId = engine.id;
+    node.classList.remove("has-icon");
+    node.replaceChildren(document.createTextNode(engine.badge));
     node.style.color = engine.badgeColor;
     node.style.backgroundColor = engine.badgeBackground;
+
+    if (!engine.icon) {
+      return;
+    }
+
+    var icon = new Image(25, 25);
+    icon.className = "engine-icon";
+    icon.alt = "";
+    icon.setAttribute("aria-hidden", "true");
+    icon.decoding = "async";
+    icon.draggable = false;
+    icon.addEventListener(
+      "load",
+      function () {
+        if (node.dataset.engineId !== engine.id) {
+          return;
+        }
+
+        node.classList.add("has-icon");
+        node.style.color = "";
+        node.style.backgroundColor = "";
+        node.replaceChildren(icon);
+      },
+      { once: true }
+    );
+    icon.src = engine.icon;
   }
 
   function engineButtons() {

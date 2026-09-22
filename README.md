@@ -27,6 +27,7 @@ window.siteConfig = {
 - `config.js`：站名与可编辑的常用软件
 - `catalog.js`：固定的搜索引擎与分类导航
 - `app.js`：渲染、搜索、搜索引擎切换和主题逻辑
+- `assets/search-icons/`：搜索服务的本地图标
 - `favicon.svg`：站点图标
 
 ## 本地预览
@@ -36,3 +37,5 @@ window.siteConfig = {
 ## 发布
 
 仓库 `glennlee1/glenn-s` 已配置为从 `main` 分支根目录发布。推送到 `main` 后，GitHub Pages 会自动更新线上网站。
+
+搜索服务名称、图标和商标归各自权利人所有，仅用于标识对应的搜索入口。
