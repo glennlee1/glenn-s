@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Glenn's轻首页 - 一个轻量、快速、可配置的个人导航首页"
+    />
+    <meta name="theme-color" content="#f4f6f8" id="themeColor" />
+    <title>Glenn's轻首页</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <script>
+      (function () {
+        var theme = "";
+
+        try {
+          theme = localStorage.getItem("glenn-home-theme") || "";
+        } catch (error) {
+          theme = "";
+        }
+
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+        }
+
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#searchInput">跳到搜索框</a>
+
+    <div class="page-shell">
+      <header class="site-header">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">G</span>
+          <div class="brand-copy">
+            <h1 id="siteTitle">Glenn's轻首页</h1>
+            <p id="siteSubtitle">常用入口，一页抵达</p>
+          </div>
+        </div>
+        <span class="local-badge">
+          <span class="local-badge-dot" aria-hidden="true"></span>
+          PERSONAL START
+        </span>
+      </header>
+
+      <main>
+        <section class="search-section" aria-label="网页搜索">
+          <form id="searchForm" class="search-form" role="search" novalidate>
+            <label class="sr-only" for="searchEngine">搜索引擎</label>
+            <select id="searchEngine" aria-label="选择搜索引擎"></select>
+
+            <label class="sr-only" for="searchInput">搜索关键词或网址</label>
+            <input
+              id="searchInput"
+              name="query"
+              type="text"
+              inputmode="search"
+              enterkeyhint="go"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              placeholder="搜索，或输入网址"
+            />
+
+            <button id="searchButton" type="submit">GO</button>
+          </form>
+          <p id="searchStatus" class="search-status" aria-live="polite"></p>
+        </section>
+
+        <nav id="commonSection" class="content-section" aria-labelledby="commonTitle">
+          <div class="section-heading">
+            <h2 id="commonTitle">常用软件</h2>
+            <span id="commonCount" class="section-count" aria-hidden="true"></span>
+          </div>
+          <ul id="commonApps" class="common-grid"></ul>
+          <p id="commonEmpty" class="empty-state" hidden>暂未配置常用软件</p>
+        </nav>
+
+        <nav
+          id="categoriesSection"
+          class="content-section categories-section"
+          aria-labelledby="categoriesTitle"
+        >
+          <div class="section-heading">
+            <h2 id="categoriesTitle">分类导航</h2>
+            <span id="categoryCount" class="section-count" aria-hidden="true"></span>
+          </div>
+          <div id="categoryGrid" class="category-grid"></div>
+          <p id="categoriesEmpty" class="empty-state" hidden>暂未配置分类导航</p>
+        </nav>
+      </main>
+
+      <footer class="site-footer">
+        <p class="config-source"><span>CONFIG</span> / config.js</p>
+        <div class="theme-control">
+          <span id="themeState">浅色主题</span>
+          <button id="themeToggle" class="icon-button" type="button">
+            <span id="themeIcon" aria-hidden="true">☾</span>
+            <span class="sr-only">切换到深色主题</span>
+          </button>
+        </div>
+      </footer>
+    </div>
+
+    <noscript>
+      <div class="noscript-message">此页面需要启用 JavaScript 才能渲染导航内容。</div>
+    </noscript>
+
+    <script src="./config.js" defer></script>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
