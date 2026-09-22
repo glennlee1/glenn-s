@@ -45,4 +45,8 @@ python -m http.server 8000
 
 ## GitHub Pages
 
-将这些文件放在 `glennlee1.github.io` 仓库的 `main` 分支根目录，并在仓库的 Pages 设置中选择从该分支根目录发布。
+本项目发布在 `glennlee1/glenn-s` 仓库，通过 `main` 分支根目录部署 GitHub Pages：
+
+```text
+https://glennlee1.github.io/glenn-s/
+```
