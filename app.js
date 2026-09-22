@@ -9,25 +9,29 @@
   var config = window.siteConfig && typeof window.siteConfig === "object"
     ? window.siteConfig
     : {};
+  var catalog = window.siteCatalog && typeof window.siteCatalog === "object"
+    ? window.siteCatalog
+    : {};
 
   var elements = {
+    siteDescription: document.getElementById("siteDescription"),
+    brandLink: document.getElementById("brandLink"),
     siteTitle: document.getElementById("siteTitle"),
-    siteSubtitle: document.getElementById("siteSubtitle"),
+    footerSiteTitle: document.getElementById("footerSiteTitle"),
     searchForm: document.getElementById("searchForm"),
-    searchEngine: document.getElementById("searchEngine"),
     searchInput: document.getElementById("searchInput"),
     searchButton: document.getElementById("searchButton"),
+    searchClear: document.getElementById("searchClear"),
     searchStatus: document.getElementById("searchStatus"),
-    commonApps: document.getElementById("commonApps"),
-    commonCount: document.getElementById("commonCount"),
-    commonEmpty: document.getElementById("commonEmpty"),
-    categoryGrid: document.getElementById("categoryGrid"),
-    categoryCount: document.getElementById("categoryCount"),
-    categoriesEmpty: document.getElementById("categoriesEmpty"),
+    engineToggle: document.getElementById("engineToggle"),
+    engineBadge: document.getElementById("engineBadge"),
+    enginePanel: document.getElementById("enginePanel"),
+    engineList: document.getElementById("engineList"),
+    searchWrap: document.querySelector(".search-wrap"),
+    navigationGrid: document.getElementById("navigationGrid"),
     themeToggle: document.getElementById("themeToggle"),
-    themeIcon: document.getElementById("themeIcon"),
-    themeState: document.getElementById("themeState"),
     themeColor: document.getElementById("themeColor"),
+    currentYear: document.getElementById("currentYear"),
   };
 
   function asArray(value) {
@@ -50,7 +54,7 @@
     try {
       window.localStorage.setItem(key, value);
     } catch (error) {
-      // The page remains fully usable when browser storage is unavailable.
+      // Storage is optional; the page remains usable when it is unavailable.
     }
   }
 
@@ -69,199 +73,231 @@
     }
   }
 
-  function takeGraphemes(value, count) {
-    var text = asText(value, "·");
-
-    if (typeof Intl !== "undefined" && typeof Intl.Segmenter === "function") {
-      var segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
-      return Array.from(segmenter.segment(text), function (part) {
-        return part.segment;
-      }).slice(0, count).join("");
-    }
-
-    return Array.from(text).slice(0, count).join("");
-  }
-
-  function createIcon(label, tone) {
-    var icon = document.createElement("span");
-    icon.className = "link-icon tone-" + (tone % 6);
-    icon.setAttribute("aria-hidden", "true");
-    icon.textContent = takeGraphemes(label, 3);
-    return icon;
-  }
-
-  function createLink(item, className, tone) {
+  function validLink(item) {
     if (!item || typeof item !== "object") {
       return null;
     }
 
     var url = safeHttpUrl(item.url);
-    var name = asText(item.name, "未命名");
-
     if (!url) {
       return null;
     }
 
-    var link = document.createElement("a");
-    var copy = document.createElement("span");
-    var nameElement = document.createElement("span");
-    var description = document.createElement("span");
-    var descriptionText = asText(item.description, "打开 " + name);
-
-    link.className = className;
-    link.href = url;
-    link.title = name + " · " + descriptionText;
-    link.appendChild(createIcon(item.icon || takeGraphemes(name, 1), tone));
-
-    copy.className = "link-copy";
-    nameElement.className = "link-name";
-    nameElement.textContent = name;
-    description.className = "link-description";
-    description.textContent = descriptionText;
-
-    copy.appendChild(nameElement);
-    copy.appendChild(description);
-    link.appendChild(copy);
-
-    return link;
+    return {
+      name: asText(item.name, "未命名"),
+      url: url,
+    };
   }
 
-  function appendListItem(list, link) {
-    var item = document.createElement("li");
-    item.appendChild(link);
-    list.appendChild(item);
+  function validEngine(engine, index) {
+    if (!engine || typeof engine !== "object") {
+      return null;
+    }
+
+    var template = asText(engine.searchUrl, "");
+    if (!template.includes("{query}") || !safeHttpUrl(template.replace("{query}", "test"))) {
+      return null;
+    }
+
+    return {
+      id: asText(engine.id, "engine-" + index),
+      name: asText(engine.name, "搜索"),
+      badge: asText(engine.badge, "搜"),
+      badgeColor: asText(engine.badgeColor, "#ffffff"),
+      badgeBackground: asText(engine.badgeBackground, "#459df5"),
+      searchUrl: template,
+    };
   }
+
+  var searchEngines = asArray(catalog.searchEngines)
+    .map(validEngine)
+    .filter(Boolean);
+  var selectedEngine = searchEngines[0] || null;
 
   function renderIdentity() {
     var title = asText(config.title, DEFAULT_TITLE);
-    var subtitle = asText(config.subtitle, "");
-
     document.title = title;
+    elements.siteDescription.content = title + " - 搜索与常用网站，一页直达";
+    elements.brandLink.setAttribute("aria-label", "返回 " + title);
     elements.siteTitle.textContent = title;
-    elements.siteSubtitle.textContent = subtitle;
-    elements.siteSubtitle.hidden = !subtitle;
+    elements.footerSiteTitle.textContent = title;
+    elements.currentYear.textContent = String(new Date().getFullYear());
   }
 
-  function getValidEngines() {
-    return asArray(config.searchEngines).reduce(function (engines, engine) {
-      if (!engine || typeof engine !== "object") {
-        return engines;
-      }
-
-      var url = safeHttpUrl(engine.url);
-      if (url) {
-        engines.push({
-          name: asText(engine.name, "搜索"),
-          url: url,
-        });
-      }
-      return engines;
-    }, []);
-  }
-
-  var searchEngines = getValidEngines();
-
-  function renderSearchEngines() {
-    var savedEngine = readStorage(STORAGE_KEYS.engine);
-    var selectedIndex = 0;
-
-    elements.searchEngine.replaceChildren();
-
-    if (!searchEngines.length) {
-      var emptyOption = document.createElement("option");
-      emptyOption.textContent = "未配置";
-      elements.searchEngine.appendChild(emptyOption);
-      elements.searchEngine.disabled = true;
-      elements.searchInput.disabled = true;
-      elements.searchButton.disabled = true;
-      elements.searchInput.placeholder = "请先在 config.js 中添加搜索引擎";
-      elements.searchStatus.textContent = "搜索引擎尚未配置";
-      return;
+  function createNavigationLink(item) {
+    var linkData = validLink(item);
+    if (!linkData) {
+      return null;
     }
 
-    searchEngines.forEach(function (engine, index) {
-      var option = document.createElement("option");
-      option.value = String(index);
-      option.textContent = engine.name;
-      elements.searchEngine.appendChild(option);
-
-      if (engine.name === savedEngine) {
-        selectedIndex = index;
-      }
-    });
-
-    elements.searchEngine.value = String(selectedIndex);
+    var link = document.createElement("a");
+    link.href = linkData.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.title = linkData.name;
+    link.textContent = linkData.name;
+    return link;
   }
 
-  function renderCommonApps() {
+  function createNavigationGroup(name, items) {
+    var section = document.createElement("section");
+    var heading = document.createElement("h2");
+    var list = document.createElement("ul");
     var validCount = 0;
 
-    elements.commonApps.replaceChildren();
+    section.className = "navigation-group";
+    heading.className = "navigation-title";
+    heading.textContent = asText(name, "未命名分类");
+    list.className = "navigation-list";
 
-    asArray(config.commonApps).forEach(function (item, index) {
-      var link = createLink(item, "app-link", index);
-      if (link) {
-        appendListItem(elements.commonApps, link);
-        validCount += 1;
+    asArray(items).forEach(function (item) {
+      var link = createNavigationLink(item);
+      if (!link) {
+        return;
       }
+
+      var listItem = document.createElement("li");
+      listItem.appendChild(link);
+      list.appendChild(listItem);
+      validCount += 1;
     });
 
-    elements.commonCount.textContent = validCount ? String(validCount).padStart(2, "0") : "";
-    elements.commonEmpty.hidden = validCount > 0;
-    elements.commonApps.hidden = validCount === 0;
+    section.appendChild(heading);
+    if (validCount) {
+      section.appendChild(list);
+    } else {
+      var empty = document.createElement("p");
+      empty.className = "navigation-empty";
+      empty.textContent = "暂未配置";
+      section.appendChild(empty);
+    }
+
+    return section;
   }
 
-  function renderCategories() {
-    var validCategoryCount = 0;
+  function renderNavigation() {
+    var fragment = document.createDocumentFragment();
 
-    elements.categoryGrid.replaceChildren();
+    fragment.appendChild(
+      createNavigationGroup("常用软件", asArray(config.commonApps))
+    );
 
-    asArray(config.categories).forEach(function (category, categoryIndex) {
+    asArray(catalog.categories).forEach(function (category) {
       if (!category || typeof category !== "object") {
         return;
       }
 
-      var links = asArray(category.links).reduce(function (nodes, item, itemIndex) {
-        var link = createLink(
-          item,
-          "category-link",
-          categoryIndex + itemIndex
-        );
-        if (link) {
-          nodes.push(link);
-        }
-        return nodes;
-      }, []);
-
-      if (!links.length) {
-        return;
-      }
-
-      var section = document.createElement("section");
-      var heading = document.createElement("h3");
-      var list = document.createElement("ul");
-
-      section.className = "category-group";
-      heading.textContent = asText(category.name, "未命名分类");
-      list.className = "category-links";
-      links.forEach(function (link) {
-        appendListItem(list, link);
-      });
-
-      section.appendChild(heading);
-      section.appendChild(list);
-      elements.categoryGrid.appendChild(section);
-      validCategoryCount += 1;
+      fragment.appendChild(
+        createNavigationGroup(category.name, category.links)
+      );
     });
 
-    elements.categoryCount.textContent = validCategoryCount
-      ? String(validCategoryCount).padStart(2, "0")
-      : "";
-    elements.categoriesEmpty.hidden = validCategoryCount > 0;
-    elements.categoryGrid.hidden = validCategoryCount === 0;
+    elements.navigationGrid.replaceChildren(fragment);
   }
 
-  function resolveDestination(query, engine) {
+  function applyBadgeStyle(node, engine) {
+    node.textContent = engine.badge;
+    node.style.color = engine.badgeColor;
+    node.style.backgroundColor = engine.badgeBackground;
+  }
+
+  function engineButtons() {
+    return Array.from(elements.engineList.querySelectorAll("button"));
+  }
+
+  function updateSelectedEngine() {
+    if (!selectedEngine) {
+      elements.engineToggle.disabled = true;
+      elements.searchInput.disabled = true;
+      elements.searchButton.disabled = true;
+      elements.searchInput.placeholder = "搜索引擎暂不可用";
+      return;
+    }
+
+    applyBadgeStyle(elements.engineBadge, selectedEngine);
+    elements.engineToggle.title = "切换搜索引擎，当前：" + selectedEngine.name;
+    elements.engineToggle.setAttribute(
+      "aria-label",
+      "切换搜索引擎，当前：" + selectedEngine.name
+    );
+
+    engineButtons().forEach(function (button) {
+      var isCurrent = button.dataset.engineId === selectedEngine.id;
+      button.classList.toggle("is-active", isCurrent);
+      button.setAttribute("aria-pressed", isCurrent ? "true" : "false");
+    });
+  }
+
+  function closeEnginePanel(options) {
+    var shouldFocusToggle = options && options.focusToggle;
+    elements.enginePanel.hidden = true;
+    elements.engineToggle.setAttribute("aria-expanded", "false");
+
+    if (shouldFocusToggle) {
+      elements.engineToggle.focus();
+    }
+  }
+
+  function openEnginePanel(options) {
+    if (!searchEngines.length) {
+      return;
+    }
+
+    elements.enginePanel.hidden = false;
+    elements.engineToggle.setAttribute("aria-expanded", "true");
+
+    if (options && options.focusSelected) {
+      var selectedButton = elements.engineList.querySelector(".is-active");
+      (selectedButton || engineButtons()[0]).focus();
+    }
+  }
+
+  function selectEngine(engine) {
+    selectedEngine = engine;
+    writeStorage(STORAGE_KEYS.engine, engine.id);
+    updateSelectedEngine();
+    closeEnginePanel();
+    elements.searchInput.focus();
+  }
+
+  function renderSearchEngines() {
+    var fragment = document.createDocumentFragment();
+    var savedEngineId = readStorage(STORAGE_KEYS.engine);
+
+    searchEngines.forEach(function (engine) {
+      if (engine.id === savedEngineId) {
+        selectedEngine = engine;
+      }
+
+      var listItem = document.createElement("li");
+      var button = document.createElement("button");
+      var badge = document.createElement("span");
+      var label = document.createElement("span");
+
+      button.type = "button";
+      button.className = "engine-option";
+      button.dataset.engineId = engine.id;
+      button.title = "使用" + engine.name + "搜索";
+      badge.className = "engine-option-badge";
+      badge.setAttribute("aria-hidden", "true");
+      applyBadgeStyle(badge, engine);
+      label.className = "engine-option-name";
+      label.textContent = engine.name;
+
+      button.appendChild(badge);
+      button.appendChild(label);
+      button.addEventListener("click", function () {
+        selectEngine(engine);
+      });
+      listItem.appendChild(button);
+      fragment.appendChild(listItem);
+    });
+
+    elements.engineList.replaceChildren(fragment);
+    updateSelectedEngine();
+  }
+
+  function resolveDestination(query) {
     var value = query.trim();
 
     if (/^https?:\/\//i.test(value)) {
@@ -277,42 +313,74 @@
     }
 
     if (
-      /^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}(?:[\/:?#].*)?$/i.test(
-        value
-      )
+      !/\s/.test(value) &&
+      (/^(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?(?:[\/?#].*)?$/.test(value) ||
+        /^[a-z0-9-]+(?::\d+)(?:[\/?#].*)?$/i.test(value) ||
+        /^[a-z0-9-]+\.local(?::\d+)?(?:[\/?#].*)?$/i.test(value))
+    ) {
+      return safeHttpUrl("http://" + value);
+    }
+
+    if (
+      !/\s/.test(value) &&
+      /^[^/:?#]+(?:\.[^/:?#]+)+(?::\d+)?(?:[\/?#].*)?$/.test(value)
     ) {
       return safeHttpUrl("https://" + value);
     }
 
-    return engine.url + encodeURIComponent(value);
+    if (!selectedEngine) {
+      return null;
+    }
+
+    return safeHttpUrl(
+      selectedEngine.searchUrl.replace("{query}", encodeURIComponent(value))
+    );
+  }
+
+  function openDestination(destination) {
+    var link = document.createElement("a");
+    link.href = destination;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   }
 
   function handleSearch(event) {
     event.preventDefault();
 
     var query = elements.searchInput.value.trim();
-    var engine = searchEngines[Number(elements.searchEngine.value)];
-
     if (!query) {
+      elements.searchForm.classList.add("is-invalid");
+      elements.searchInput.setAttribute("aria-invalid", "true");
+      elements.searchInput.setCustomValidity("请输入关键词或网址");
       elements.searchStatus.textContent = "请输入关键词或网址";
       elements.searchInput.focus();
+      elements.searchInput.reportValidity();
       return;
     }
 
-    if (!engine) {
-      elements.searchStatus.textContent = "当前没有可用的搜索引擎";
-      return;
-    }
+    elements.searchInput.setCustomValidity("");
 
-    var destination = resolveDestination(query, engine);
+    var destination = resolveDestination(query);
     if (!destination) {
-      elements.searchStatus.textContent = "网址格式无效，请检查后重试";
+      elements.searchStatus.textContent = "无法识别当前网址或搜索引擎";
       elements.searchInput.focus();
       return;
     }
 
-    elements.searchStatus.textContent = "正在前往 " + destination;
-    window.location.assign(destination);
+    elements.searchStatus.textContent = "正在打开搜索结果";
+    openDestination(destination);
+  }
+
+  function updateClearButton() {
+    var hasValue = Boolean(elements.searchInput.value);
+    elements.searchClear.hidden = !hasValue;
+    elements.searchForm.classList.remove("is-invalid");
+    elements.searchInput.removeAttribute("aria-invalid");
+    elements.searchInput.setCustomValidity("");
+    elements.searchStatus.textContent = "";
   }
 
   function currentTheme() {
@@ -321,15 +389,13 @@
 
   function updateThemeControl() {
     var isDark = currentTheme() === "dark";
-    var nextThemeLabel = isDark ? "浅色" : "深色";
-    var accessibleLabel = "切换到" + nextThemeLabel + "主题";
+    var nextTheme = isDark ? "浅色" : "深色";
+    var label = "切换到" + nextTheme + "模式";
 
-    elements.themeIcon.textContent = isDark ? "☀" : "☾";
-    elements.themeState.textContent = isDark ? "深色主题" : "浅色主题";
-    elements.themeToggle.setAttribute("aria-label", accessibleLabel);
-    elements.themeToggle.title = accessibleLabel;
-    elements.themeToggle.querySelector(".sr-only").textContent = accessibleLabel;
-    elements.themeColor.content = isDark ? "#111418" : "#f4f6f8";
+    elements.themeToggle.textContent = "# " + nextTheme + "模式 #";
+    elements.themeToggle.setAttribute("aria-label", label);
+    elements.themeToggle.title = label;
+    elements.themeColor.content = isDark ? "#27282f" : "#f2f2f2";
   }
 
   function toggleTheme() {
@@ -339,20 +405,81 @@
     updateThemeControl();
   }
 
+  function moveEngineFocus(event) {
+    var buttons = engineButtons();
+    var currentIndex = buttons.indexOf(document.activeElement);
+    var nextIndex = currentIndex;
+
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      nextIndex = (currentIndex + 1 + buttons.length) % buttons.length;
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = buttons.length - 1;
+    } else if (event.key === "Escape") {
+      closeEnginePanel({ focusToggle: true });
+      event.preventDefault();
+      return;
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    buttons[nextIndex].focus();
+  }
+
   function bindEvents() {
     elements.searchForm.addEventListener("submit", handleSearch);
-    elements.searchEngine.addEventListener("change", function () {
-      var engine = searchEngines[Number(elements.searchEngine.value)];
-      if (engine) {
-        writeStorage(STORAGE_KEYS.engine, engine.name);
+    elements.searchInput.addEventListener("input", updateClearButton);
+    elements.searchClear.addEventListener("click", function () {
+      elements.searchInput.value = "";
+      updateClearButton();
+      elements.searchInput.focus();
+    });
+
+    elements.engineToggle.addEventListener("click", function () {
+      if (elements.enginePanel.hidden) {
+        openEnginePanel();
+      } else {
+        closeEnginePanel();
       }
     });
-    elements.searchInput.addEventListener("input", function () {
-      elements.searchStatus.textContent = "";
+    elements.engineToggle.addEventListener("keydown", function (event) {
+      if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openEnginePanel({ focusSelected: true });
+      } else if (event.key === "Escape") {
+        closeEnginePanel();
+      }
     });
-    elements.themeToggle.addEventListener("click", toggleTheme);
+    elements.engineList.addEventListener("keydown", moveEngineFocus);
+    elements.searchWrap.addEventListener("focusout", function (event) {
+      if (
+        !elements.enginePanel.hidden &&
+        (!event.relatedTarget || !elements.searchWrap.contains(event.relatedTarget))
+      ) {
+        closeEnginePanel();
+      }
+    });
+
+    document.addEventListener("pointerdown", function (event) {
+      if (
+        !elements.enginePanel.hidden &&
+        !event.target.closest(".search-wrap")
+      ) {
+        closeEnginePanel();
+      }
+    });
 
     document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !elements.enginePanel.hidden) {
+        event.preventDefault();
+        closeEnginePanel({ focusToggle: true });
+        return;
+      }
+
       if (
         event.key === "/" &&
         document.activeElement !== elements.searchInput &&
@@ -368,22 +495,14 @@
         elements.searchInput.blur();
       }
     });
-  }
 
-  function focusSearchOnDesktop() {
-    if (
-      !elements.searchInput.disabled &&
-      window.matchMedia("(pointer: fine) and (min-width: 720px)").matches
-    ) {
-      elements.searchInput.focus({ preventScroll: true });
-    }
+    elements.themeToggle.addEventListener("click", toggleTheme);
   }
 
   renderIdentity();
+  renderNavigation();
   renderSearchEngines();
-  renderCommonApps();
-  renderCategories();
   updateThemeControl();
+  updateClearButton();
   bindEvents();
-  focusSearchOnDesktop();
 })();

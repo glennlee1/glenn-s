@@ -4,10 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
+      id="siteDescription"
       name="description"
-      content="Glenn's轻首页 - 一个轻量、快速、可配置的个人导航首页"
+      content="Glenn's轻首页 - 搜索与常用网站，一页直达"
     />
-    <meta name="theme-color" content="#f4f6f8" id="themeColor" />
+    <meta name="theme-color" content="#f2f2f2" id="themeColor" />
     <title>Glenn's轻首页</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <script>
@@ -29,90 +30,102 @@
         document.documentElement.dataset.theme = theme;
       })();
     </script>
-    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./style.css?v=2" />
   </head>
   <body>
     <a class="skip-link" href="#searchInput">跳到搜索框</a>
 
-    <div class="page-shell">
-      <header class="site-header">
-        <div class="brand">
-          <span class="brand-mark" aria-hidden="true">G</span>
-          <div class="brand-copy">
-            <h1 id="siteTitle">Glenn's轻首页</h1>
-            <p id="siteSubtitle">常用入口，一页抵达</p>
-          </div>
-        </div>
-        <span class="local-badge">
-          <span class="local-badge-dot" aria-hidden="true"></span>
-          PERSONAL START
-        </span>
-      </header>
+    <header class="site-header">
+      <div class="header-inner">
+        <a id="brandLink" class="brand" href="./" aria-label="返回 Glenn's轻首页">
+          <img class="brand-mark" src="./favicon.svg" alt="" width="40" height="40" />
+          <span id="siteTitle">Glenn's轻首页</span>
+        </a>
+      </div>
+    </header>
 
-      <main>
+    <main id="mainContent" class="site-main">
+      <div class="page-container">
         <section class="search-section" aria-label="网页搜索">
-          <form id="searchForm" class="search-form" role="search" novalidate>
-            <label class="sr-only" for="searchEngine">搜索引擎</label>
-            <select id="searchEngine" aria-label="选择搜索引擎"></select>
+          <div class="search-wrap">
+            <form id="searchForm" class="search-form" role="search" novalidate>
+              <button
+                id="engineToggle"
+                class="engine-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="enginePanel"
+                title="切换搜索引擎"
+              >
+                <span id="engineBadge" class="engine-badge" aria-hidden="true">百</span>
+                <span class="sr-only">切换搜索引擎</span>
+              </button>
 
-            <label class="sr-only" for="searchInput">搜索关键词或网址</label>
-            <input
-              id="searchInput"
-              name="query"
-              type="text"
-              inputmode="search"
-              enterkeyhint="go"
-              autocomplete="off"
-              autocapitalize="off"
-              spellcheck="false"
-              placeholder="搜索，或输入网址"
-            />
+              <label class="sr-only" for="searchInput">搜索关键词或网址</label>
+              <input
+                id="searchInput"
+                class="search-input"
+                name="query"
+                type="text"
+                inputmode="search"
+                enterkeyhint="search"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                placeholder="点击左侧切换搜索引擎~"
+              />
 
-            <button id="searchButton" type="submit">GO</button>
-          </form>
-          <p id="searchStatus" class="search-status" aria-live="polite"></p>
+              <button
+                id="searchClear"
+                class="search-clear"
+                type="button"
+                aria-label="清空搜索内容"
+                title="清空"
+                hidden
+              >
+                &times;
+              </button>
+              <button id="searchButton" class="search-button" type="submit">GO</button>
+            </form>
+
+            <div
+              id="enginePanel"
+              class="engine-panel"
+              role="group"
+              aria-labelledby="enginePanelTitle"
+              hidden
+            >
+              <strong id="enginePanelTitle" class="engine-panel-title">请选择搜索引擎：</strong>
+              <ul id="engineList" class="engine-list"></ul>
+            </div>
+
+            <p id="searchStatus" class="sr-only" aria-live="polite"></p>
+            <a class="search-featured" href="https://github.com/glennlee1" target="_blank" rel="noopener noreferrer">
+              <span aria-hidden="true">↗</span> Glenn 的 GitHub
+            </a>
+          </div>
         </section>
 
-        <nav id="commonSection" class="content-section" aria-labelledby="commonTitle">
-          <div class="section-heading">
-            <h2 id="commonTitle">常用软件</h2>
-            <span id="commonCount" class="section-count" aria-hidden="true"></span>
-          </div>
-          <ul id="commonApps" class="common-grid"></ul>
-          <p id="commonEmpty" class="empty-state" hidden>暂未配置常用软件</p>
-        </nav>
+        <nav id="navigationGrid" class="navigation-grid" aria-label="常用网站导航"></nav>
+      </div>
+    </main>
 
-        <nav
-          id="categoriesSection"
-          class="content-section categories-section"
-          aria-labelledby="categoriesTitle"
-        >
-          <div class="section-heading">
-            <h2 id="categoriesTitle">分类导航</h2>
-            <span id="categoryCount" class="section-count" aria-hidden="true"></span>
-          </div>
-          <div id="categoryGrid" class="category-grid"></div>
-          <p id="categoriesEmpty" class="empty-state" hidden>暂未配置分类导航</p>
-        </nav>
-      </main>
-
-      <footer class="site-footer">
-        <p class="config-source"><span>CONFIG</span> / config.js</p>
-        <div class="theme-control">
-          <span id="themeState">浅色主题</span>
-          <button id="themeToggle" class="icon-button" type="button">
-            <span id="themeIcon" aria-hidden="true">☾</span>
-            <span class="sr-only">切换到深色主题</span>
-          </button>
-        </div>
-      </footer>
-    </div>
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <span>&copy; <span id="currentYear"></span> <span id="footerSiteTitle">Glenn's轻首页</span></span>
+        <span class="footer-separator" aria-hidden="true">·</span>
+        <a href="https://github.com/glennlee1/glenn-s" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <span class="footer-separator" aria-hidden="true">·</span>
+        <button id="themeToggle" class="theme-toggle" type="button"># 深色模式 #</button>
+      </div>
+    </footer>
 
     <noscript>
-      <div class="noscript-message">此页面需要启用 JavaScript 才能渲染导航内容。</div>
+      <p class="noscript-message">此页面需要启用 JavaScript 才能显示导航内容。</p>
     </noscript>
 
-    <script src="./config.js" defer></script>
-    <script src="./app.js" defer></script>
+    <script src="./config.js?v=2" defer></script>
+    <script src="./catalog.js?v=2" defer></script>
+    <script src="./app.js?v=2" defer></script>
   </body>
 </html>

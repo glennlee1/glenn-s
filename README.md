@@ -1,52 +1,38 @@
 # Glenn's轻首页
 
-一个零依赖、配置驱动的个人导航首页。支持百度、Bing、Google 搜索，网址直达，浅色/深色主题和移动端布局。
+一个零依赖的个人搜索与网址导航首页，已适配桌面、平板和手机。页面支持 15 个搜索入口、网址直达、浅色/深色模式，并通过 GitHub Pages 自动发布。
 
-直接打开 `index.html` 即可使用。
+线上地址：<https://glennlee1.github.io/glenn-s/>
+
+## 修改站名和常用软件
+
+只需编辑 `config.js`。修改 `title` 可以更换网页名；修改 `commonApps` 可以增删、改名或排序“常用软件”。
+
+```js
+window.siteConfig = {
+  title: "Glenn's轻首页",
+  commonApps: [
+    { name: "ChatGPT", url: "https://chatgpt.com/" },
+    { name: "GitHub", url: "https://github.com/" },
+  ],
+};
+```
+
+每项只需要 `name` 和以 `http://` 或 `https://` 开头的 `url`。无效网址会被自动忽略。
 
 ## 文件结构
 
 - `index.html`：页面结构
-- `config.js`：标题、搜索引擎和全部导航入口
-- `app.js`：配置渲染、搜索和主题逻辑
-- `style.css`：页面样式与响应式布局
-- `favicon.svg`：浏览器标签页图标
-
-## 修改导航
-
-编辑 `config.js`：
-
-- `commonApps`：搜索框下方的常用软件
-- `categories`：分类导航
-- `searchEngines`：搜索引擎
-
-每个链接支持以下字段：
-
-```js
-{
-  name: "名称",
-  icon: "图标文字",
-  url: "https://example.com/",
-  description: "鼠标悬停提示和副说明"
-}
-```
-
-调整数组中条目的顺序即可改变页面上的显示顺序。分类本身也可在 `categories` 中新增、删除或重命名。
+- `style.css`：界面和响应式布局
+- `config.js`：站名与可编辑的常用软件
+- `catalog.js`：固定的搜索引擎与分类导航
+- `app.js`：渲染、搜索、搜索引擎切换和主题逻辑
+- `favicon.svg`：站点图标
 
 ## 本地预览
 
-直接双击 `index.html` 通常即可打开。若浏览器限制本地文件脚本，可在当前目录启动一个静态服务器：
+这是纯静态网站，直接打开 `index.html` 即可预览。也可以用任意静态服务器启动当前目录。
 
-```bash
-python -m http.server 8000
-```
+## 发布
 
-然后访问 `http://localhost:8000/`。
-
-## GitHub Pages
-
-本项目发布在 `glennlee1/glenn-s` 仓库，通过 `main` 分支根目录部署 GitHub Pages：
-
-```text
-https://glennlee1.github.io/glenn-s/
-```
+仓库 `glennlee1/glenn-s` 已配置为从 `main` 分支根目录发布。推送到 `main` 后，GitHub Pages 会自动更新线上网站。
