@@ -304,7 +304,7 @@
     return link;
   }
 
-  function createNavigationGroup(name, items, editable, groupIndex) {
+  function createNavigationGroup(name, items) {
     var section = document.createElement("section");
     var heading = document.createElement("h2");
     var list = document.createElement("ul");
@@ -314,26 +314,7 @@
     heading.className = "navigation-title";
     heading.textContent = asText(name, "未命名分类");
     list.className = "navigation-list";
-
-    if (editable) {
-      var headingRow = document.createElement("div");
-      var editButton = document.createElement("button");
-
-      headingRow.className = "navigation-title-row";
-      editButton.type = "button";
-      editButton.className = "navigation-edit";
-      editButton.title = "编辑" + asText(name, "导航模块");
-      editButton.setAttribute("aria-label", "编辑" + asText(name, "导航模块"));
-      editButton.dataset.groupIndex = String(groupIndex);
-      editButton.innerHTML =
-        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>';
-      editButton.addEventListener("click", openAppEditor);
-      headingRow.appendChild(heading);
-      headingRow.appendChild(editButton);
-      section.appendChild(headingRow);
-    } else {
-      section.appendChild(heading);
-    }
+    section.appendChild(heading);
 
     asArray(items).forEach(function (item) {
       var link = createNavigationLink(item);
@@ -362,9 +343,9 @@
   function renderNavigation() {
     var fragment = document.createDocumentFragment();
 
-    navigationGroups.forEach(function (group, index) {
+    navigationGroups.forEach(function (group) {
       fragment.appendChild(
-        createNavigationGroup(group.name, group.links, true, index)
+        createNavigationGroup(group.name, group.links)
       );
     });
 
@@ -584,7 +565,7 @@
 
     var focusTarget = editorReturnFocus;
     if (!focusTarget || !document.contains(focusTarget)) {
-      focusTarget = document.querySelector(".navigation-edit");
+      focusTarget = elements.siteSettingsToggle;
     }
     if (focusTarget && typeof focusTarget.focus === "function") {
       focusTarget.focus();
