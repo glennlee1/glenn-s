@@ -7,8 +7,10 @@
     apps: "glenn-home-common-apps",
     identity: "glenn-home-identity",
     navigation: "glenn-home-navigation",
+    navigationVersion: "glenn-home-navigation-version",
   };
   var DEFAULT_TITLE = "Glenn导航";
+  var NAVIGATION_DEFAULT_VERSION = "cn-game-analytics-1";
   var config = window.siteConfig && typeof window.siteConfig === "object"
     ? window.siteConfig
     : {};
@@ -181,8 +183,40 @@
     });
   }
 
+  function mergeNavigationGroups(savedGroups) {
+    var saved = cloneNavigationGroups(savedGroups);
+
+    return defaultNavigationGroups.map(function (defaultGroup, index) {
+      var savedGroup = saved[index];
+      var seenUrls = {};
+      var mergedLinks = [];
+      var candidateLinks = defaultGroup.links.concat(savedGroup ? savedGroup.links : []);
+
+      candidateLinks.forEach(function (item) {
+        var link = validLink(item);
+        if (!link || seenUrls[link.url]) {
+          return;
+        }
+
+        seenUrls[link.url] = true;
+        mergedLinks.push(link);
+      });
+
+      return {
+        id: defaultGroup.id,
+        name: savedGroup ? asText(savedGroup.name, defaultGroup.name) : defaultGroup.name,
+        links: mergedLinks,
+      };
+    });
+  }
+
+  function rememberNavigationVersion() {
+    writeStorage(STORAGE_KEYS.navigationVersion, NAVIGATION_DEFAULT_VERSION);
+  }
+
   function readNavigationGroups() {
     var saved = readStorage(STORAGE_KEYS.navigation);
+    var savedVersion = readStorage(STORAGE_KEYS.navigationVersion);
     if (saved === null) {
       var legacyApps = readStorage(STORAGE_KEYS.apps);
       if (legacyApps !== null) {
@@ -191,25 +225,41 @@
           if (Array.isArray(parsedLegacyApps)) {
             var migratedGroups = cloneNavigationGroups(defaultNavigationGroups);
             migratedGroups[0].links = parsedLegacyApps.map(validLink).filter(Boolean);
-            return migratedGroups;
+            var mergedLegacyGroups = mergeNavigationGroups(migratedGroups);
+            rememberNavigationVersion();
+            return mergedLegacyGroups;
           }
         } catch (error) {
           // Fall back to the configured defaults below.
         }
       }
+      rememberNavigationVersion();
       return cloneNavigationGroups(defaultNavigationGroups);
     }
 
     try {
       var parsed = JSON.parse(saved);
-      return Array.isArray(parsed) ? cloneNavigationGroups(parsed) : cloneNavigationGroups(defaultNavigationGroups);
+      if (!Array.isArray(parsed)) {
+        rememberNavigationVersion();
+        return cloneNavigationGroups(defaultNavigationGroups);
+      }
+
+      if (savedVersion !== NAVIGATION_DEFAULT_VERSION) {
+        var mergedGroups = mergeNavigationGroups(parsed);
+        rememberNavigationVersion();
+        return mergedGroups;
+      }
+
+      return cloneNavigationGroups(parsed);
     } catch (error) {
+      rememberNavigationVersion();
       return cloneNavigationGroups(defaultNavigationGroups);
     }
   }
 
   function persistNavigationGroups() {
     writeStorage(STORAGE_KEYS.navigation, JSON.stringify(navigationGroups));
+    rememberNavigationVersion();
   }
 
   navigationGroups = readNavigationGroups();

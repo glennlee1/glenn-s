@@ -3,6 +3,19 @@ window.siteConfig = {
   title: "Glenn导航",
 
   commonApps: [
+    { name: "伽马数据", url: "https://www.gamadata.com.cn/" },
+    { name: "DataEye", url: "https://www.dataeye.com/" },
+    { name: "点点数据", url: "https://www.diandian.com/" },
+    { name: "七麦数据", url: "https://www.qimai.cn/" },
+    { name: "蝉大师", url: "https://www.chandashi.com/" },
+    { name: "AppGrowing", url: "https://appgrowing.cn/" },
+    { name: "TalkingData", url: "https://www.talkingdata.com/" },
+    { name: "QuestMobile", url: "https://www.questmobile.com.cn/" },
+    { name: "巨量算数", url: "https://index.oceanengine.com/" },
+    { name: "百度指数", url: "https://index.baidu.com/" },
+    { name: "友盟+", url: "https://www.umeng.com/" },
+    { name: "神策数据", url: "https://www.sensorsdata.cn/" },
+    { name: "GrowingIO", url: "https://www.growingio.com/" },
     { name: "SteamDB", url: "https://steamdb.info/" },
     { name: "VG Insights", url: "https://vginsights.com/" },
     { name: "Steam Charts", url: "https://steamcharts.com/" },
@@ -16,7 +29,5 @@ window.siteConfig = {
     { name: "Amplitude", url: "https://amplitude.com/" },
     { name: "Mixpanel", url: "https://mixpanel.com/" },
     { name: "Google Analytics", url: "https://analytics.google.com/" },
-    { name: "伽马数据", url: "https://www.gamabeta.com/" },
-    { name: "七麦数据", url: "https://www.qimai.cn/" },
   ],
 };
