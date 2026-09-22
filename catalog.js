@@ -10,6 +10,7 @@
         badge: "百",
         badgeColor: "#ffffff",
         badgeBackground: "#4e6ef2",
+        homeUrl: "https://www.baidu.com/",
         searchUrl: "https://www.baidu.com/s?ie=utf-8&wd={query}",
       },
       {
@@ -19,6 +20,7 @@
         badge: "G",
         badgeColor: "#ffffff",
         badgeBackground: "#4285f4",
+        homeUrl: "https://www.google.com/",
         searchUrl: "https://www.google.com/search?q={query}",
       },
       {
@@ -28,6 +30,7 @@
         badge: "B",
         badgeColor: "#ffffff",
         badgeBackground: "#008373",
+        homeUrl: "https://www.bing.com/",
         searchUrl: "https://www.bing.com/search?q={query}",
       },
       {
@@ -37,6 +40,7 @@
         badge: "360",
         badgeColor: "#ffffff",
         badgeBackground: "#19b955",
+        homeUrl: "https://www.so.com/",
         searchUrl: "https://www.so.com/s?q={query}",
       },
       {
@@ -46,6 +50,7 @@
         badge: "D",
         badgeColor: "#ffffff",
         badgeBackground: "#de5833",
+        homeUrl: "https://duckduckgo.com/",
         searchUrl: "https://duckduckgo.com/?q={query}",
       },
       {
@@ -55,6 +60,7 @@
         badge: "搜",
         badgeColor: "#ffffff",
         badgeBackground: "#ff6347",
+        homeUrl: "https://www.sogou.com/",
         searchUrl: "https://www.sogou.com/web?query={query}",
       },
       {
@@ -64,6 +70,7 @@
         badge: "知",
         badgeColor: "#ffffff",
         badgeBackground: "#1772f6",
+        homeUrl: "https://www.zhihu.com/",
         searchUrl: "https://www.zhihu.com/search?type=content&q={query}",
       },
       {
@@ -73,6 +80,7 @@
         badge: "有",
         badgeColor: "#ffffff",
         badgeBackground: "#e74c3c",
+        homeUrl: "https://www.youdao.com/",
         searchUrl: "https://www.youdao.com/result?word={query}&lang=zh-CN",
       },
       {
@@ -82,6 +90,7 @@
         badge: "B",
         badgeColor: "#ffffff",
         badgeBackground: "#00aeec",
+        homeUrl: "https://www.bilibili.com/",
         searchUrl: "https://search.bilibili.com/all?keyword={query}",
       },
       {
@@ -91,6 +100,7 @@
         badge: "C",
         badgeColor: "#ffffff",
         badgeBackground: "#fc5531",
+        homeUrl: "https://www.csdn.net/",
         searchUrl: "https://so.csdn.net/so/search?q={query}",
       },
       {
@@ -100,6 +110,7 @@
         badge: "GH",
         badgeColor: "#ffffff",
         badgeBackground: "#24292f",
+        homeUrl: "https://github.com/",
         searchUrl: "https://github.com/search?q={query}",
       },
       {
@@ -109,6 +120,7 @@
         badge: "SO",
         badgeColor: "#ffffff",
         badgeBackground: "#f48024",
+        homeUrl: "https://stackoverflow.com/",
         searchUrl: "https://stackoverflow.com/search?q={query}",
       },
       {
@@ -118,6 +130,7 @@
         badge: "学",
         badgeColor: "#ffffff",
         badgeBackground: "#4285f4",
+        homeUrl: "https://scholar.google.com/",
         searchUrl: "https://scholar.google.com/scholar?q={query}",
       },
       {
@@ -127,6 +140,7 @@
         badge: "百",
         badgeColor: "#ffffff",
         badgeBackground: "#5c78ff",
+        homeUrl: "https://xueshu.baidu.com/",
         searchUrl: "https://xueshu.baidu.com/s?wd={query}",
       },
       {
@@ -136,6 +150,7 @@
         badge: "SS",
         badgeColor: "#ffffff",
         badgeBackground: "#1857b6",
+        homeUrl: "https://www.semanticscholar.org/",
         searchUrl: "https://www.semanticscholar.org/search?q={query}",
       },
     ],

@@ -157,6 +157,8 @@ input:disabled {
   height: 40px;
   flex: 0 0 40px;
   display: block;
+  object-fit: cover;
+  border-radius: 20%;
 }
 
 .brand span {
@@ -181,11 +183,20 @@ input:disabled {
   padding: 80px 0 30px;
 }
 
+.search-stage {
+  width: min(100%, 706px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 650px) 44px;
+  align-items: start;
+  gap: 12px;
+}
+
 .search-wrap {
   position: relative;
-  width: 650px;
+  min-width: 0;
+  width: 100%;
   max-width: 100%;
-  margin: 0 auto;
 }
 
 .search-form {
@@ -477,16 +488,46 @@ input:disabled {
   gap: 7px;
 }
 
-.site-footer a,
-.theme-toggle {
+.site-footer a {
   color: inherit;
-  background: transparent;
-  border: 0;
   text-decoration: none;
 }
 
 .theme-toggle {
+  width: 44px;
+  height: 44px;
+  margin-top: 3px;
   padding: 0;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: color 180ms ease, border-color 180ms ease, background-color 180ms ease;
+}
+
+.theme-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.theme-icon-sun {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-icon-moon {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-icon-sun {
+  display: block;
 }
 
 .noscript-message {
@@ -534,9 +575,13 @@ input:focus-visible {
   }
 
   .search-featured:hover,
-  .site-footer a:hover,
+  .site-footer a:hover {
+    color: var(--accent);
+  }
+
   .theme-toggle:hover {
     color: var(--accent);
+    border-color: var(--accent);
   }
 }
 
@@ -584,8 +629,8 @@ input:focus-visible {
     padding: 31px 0 30px;
   }
 
-  .search-wrap {
-    width: 100%;
+  .search-stage {
+    grid-template-columns: minmax(0, 1fr) 44px;
   }
 
   .engine-panel {
@@ -626,6 +671,10 @@ input:focus-visible {
 }
 
 @media (max-width: 370px) {
+  .engine-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .engine-option {
     padding-right: 5px;
     padding-left: 5px;

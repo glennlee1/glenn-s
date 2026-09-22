@@ -5,7 +5,7 @@
     theme: "glenn-home-theme",
     engine: "glenn-home-search-engine",
   };
-  var DEFAULT_TITLE = "Glenn's轻首页";
+  var DEFAULT_TITLE = "Glenn导航";
   var config = window.siteConfig && typeof window.siteConfig === "object"
     ? window.siteConfig
     : {};
@@ -116,7 +116,12 @@
     }
 
     var template = asText(engine.searchUrl, "");
-    if (!template.includes("{query}") || !safeHttpUrl(template.replace("{query}", "test"))) {
+    var homeUrl = safeHttpUrl(engine.homeUrl);
+    if (
+      !homeUrl ||
+      !template.includes("{query}") ||
+      !safeHttpUrl(template.replace("{query}", "test"))
+    ) {
       return null;
     }
 
@@ -127,6 +132,7 @@
       badge: asText(engine.badge, "搜"),
       badgeColor: asText(engine.badgeColor, "#ffffff"),
       badgeBackground: asText(engine.badgeBackground, "#459df5"),
+      homeUrl: homeUrl,
       searchUrl: template,
     };
   }
@@ -401,26 +407,22 @@
     event.preventDefault();
 
     var query = elements.searchInput.value.trim();
-    if (!query) {
-      elements.searchForm.classList.add("is-invalid");
-      elements.searchInput.setAttribute("aria-invalid", "true");
-      elements.searchInput.setCustomValidity("请输入关键词或网址");
-      elements.searchStatus.textContent = "请输入关键词或网址";
-      elements.searchInput.focus();
-      elements.searchInput.reportValidity();
-      return;
-    }
-
     elements.searchInput.setCustomValidity("");
+    elements.searchForm.classList.remove("is-invalid");
+    elements.searchInput.removeAttribute("aria-invalid");
 
-    var destination = resolveDestination(query);
+    var destination = query
+      ? resolveDestination(query)
+      : selectedEngine && selectedEngine.homeUrl;
     if (!destination) {
       elements.searchStatus.textContent = "无法识别当前网址或搜索引擎";
       elements.searchInput.focus();
       return;
     }
 
-    elements.searchStatus.textContent = "正在打开搜索结果";
+    elements.searchStatus.textContent = query
+      ? "正在打开搜索结果"
+      : "正在打开" + selectedEngine.name;
     openDestination(destination);
   }
 
@@ -442,7 +444,6 @@
     var nextTheme = isDark ? "浅色" : "深色";
     var label = "切换到" + nextTheme + "模式";
 
-    elements.themeToggle.textContent = "# " + nextTheme + "模式 #";
     elements.themeToggle.setAttribute("aria-label", label);
     elements.themeToggle.title = label;
     elements.themeColor.content = isDark ? "#27282f" : "#f2f2f2";

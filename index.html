@@ -6,11 +6,11 @@
     <meta
       id="siteDescription"
       name="description"
-      content="Glenn's轻首页 - 搜索与常用网站，一页直达"
+      content="Glenn导航 - 搜索与常用网站，一页直达"
     />
     <meta name="theme-color" content="#f2f2f2" id="themeColor" />
-    <title>Glenn's轻首页</title>
-    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <title>Glenn导航</title>
+    <link rel="icon" href="./favicon.png" type="image/png" sizes="64x64" />
     <script>
       (function () {
         var theme = "";
@@ -30,16 +30,16 @@
         document.documentElement.dataset.theme = theme;
       })();
     </script>
-    <link rel="stylesheet" href="./style.css?v=3" />
+    <link rel="stylesheet" href="./style.css?v=4" />
   </head>
   <body>
     <a class="skip-link" href="#searchInput">跳到搜索框</a>
 
     <header class="site-header">
       <div class="header-inner">
-        <a id="brandLink" class="brand" href="./" aria-label="返回 Glenn's轻首页">
-          <img class="brand-mark" src="./favicon.svg" alt="" width="40" height="40" />
-          <span id="siteTitle">Glenn's轻首页</span>
+        <a id="brandLink" class="brand" href="./" aria-label="返回 Glenn导航">
+          <img class="brand-mark" src="./assets/brand/glenn-cat.png" alt="" width="40" height="40" />
+          <span id="siteTitle">Glenn导航</span>
         </a>
       </div>
     </header>
@@ -47,62 +47,80 @@
     <main id="mainContent" class="site-main">
       <div class="page-container">
         <section class="search-section" aria-label="网页搜索">
-          <div class="search-wrap">
-            <form id="searchForm" class="search-form" role="search" novalidate>
-              <button
-                id="engineToggle"
-                class="engine-toggle"
-                type="button"
-                aria-expanded="false"
-                aria-controls="enginePanel"
-                title="切换搜索引擎"
-              >
-                <span id="engineBadge" class="engine-badge" aria-hidden="true">百</span>
-                <span class="sr-only">切换搜索引擎</span>
-              </button>
+          <div class="search-stage">
+            <div class="search-wrap">
+              <form id="searchForm" class="search-form" role="search" novalidate>
+                <button
+                  id="engineToggle"
+                  class="engine-toggle"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="enginePanel"
+                  title="切换搜索引擎"
+                >
+                  <span id="engineBadge" class="engine-badge" aria-hidden="true">百</span>
+                  <span class="sr-only">切换搜索引擎</span>
+                </button>
 
-              <label class="sr-only" for="searchInput">搜索关键词或网址</label>
-              <input
-                id="searchInput"
-                class="search-input"
-                name="query"
-                type="text"
-                inputmode="search"
-                enterkeyhint="search"
-                autocomplete="off"
-                autocapitalize="off"
-                spellcheck="false"
-                placeholder="点击左侧切换搜索引擎~"
-              />
+                <label class="sr-only" for="searchInput">搜索关键词或网址</label>
+                <input
+                  id="searchInput"
+                  class="search-input"
+                  name="query"
+                  type="text"
+                  inputmode="search"
+                  enterkeyhint="search"
+                  autocomplete="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                  placeholder="点击左侧切换搜索引擎~"
+                />
 
-              <button
-                id="searchClear"
-                class="search-clear"
-                type="button"
-                aria-label="清空搜索内容"
-                title="清空"
+                <button
+                  id="searchClear"
+                  class="search-clear"
+                  type="button"
+                  aria-label="清空搜索内容"
+                  title="清空"
+                  hidden
+                >
+                  &times;
+                </button>
+                <button id="searchButton" class="search-button" type="submit">GO</button>
+              </form>
+
+              <div
+                id="enginePanel"
+                class="engine-panel"
+                role="group"
+                aria-labelledby="enginePanelTitle"
                 hidden
               >
-                &times;
-              </button>
-              <button id="searchButton" class="search-button" type="submit">GO</button>
-            </form>
+                <strong id="enginePanelTitle" class="engine-panel-title">请选择搜索引擎：</strong>
+                <ul id="engineList" class="engine-list"></ul>
+              </div>
 
-            <div
-              id="enginePanel"
-              class="engine-panel"
-              role="group"
-              aria-labelledby="enginePanelTitle"
-              hidden
-            >
-              <strong id="enginePanelTitle" class="engine-panel-title">请选择搜索引擎：</strong>
-              <ul id="engineList" class="engine-list"></ul>
+              <p id="searchStatus" class="sr-only" aria-live="polite"></p>
+              <a class="search-featured" href="https://github.com/glennlee1" target="_blank" rel="noopener noreferrer">
+                <span aria-hidden="true">↗</span> Glenn 的 GitHub
+              </a>
             </div>
 
-            <p id="searchStatus" class="sr-only" aria-live="polite"></p>
-            <a class="search-featured" href="https://github.com/glennlee1" target="_blank" rel="noopener noreferrer">
-              <span aria-hidden="true">↗</span> Glenn 的 GitHub
-            </a>
+            <button
+              id="themeToggle"
+              class="theme-toggle"
+              type="button"
+              aria-label="切换到深色模式"
+              title="切换到深色模式"
+            >
+              <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+              </svg>
+              <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.35 17.66l-1.42 1.41M19.07 4.93l-1.41 1.42"></path>
+              </svg>
+            </button>
           </div>
         </section>
 
@@ -112,11 +130,9 @@
 
     <footer class="site-footer">
       <div class="footer-inner">
-        <span>&copy; <span id="currentYear"></span> <span id="footerSiteTitle">Glenn's轻首页</span></span>
+        <span>&copy; <span id="currentYear"></span> <span id="footerSiteTitle">Glenn导航</span></span>
         <span class="footer-separator" aria-hidden="true">·</span>
         <a href="https://github.com/glennlee1/glenn-s" target="_blank" rel="noopener noreferrer">GitHub</a>
-        <span class="footer-separator" aria-hidden="true">·</span>
-        <button id="themeToggle" class="theme-toggle" type="button"># 深色模式 #</button>
       </div>
     </footer>
 
@@ -124,8 +140,8 @@
       <p class="noscript-message">此页面需要启用 JavaScript 才能显示导航内容。</p>
     </noscript>
 
-    <script src="./config.js?v=3" defer></script>
-    <script src="./catalog.js?v=3" defer></script>
-    <script src="./app.js?v=3" defer></script>
+    <script src="./config.js?v=4" defer></script>
+    <script src="./catalog.js?v=4" defer></script>
+    <script src="./app.js?v=4" defer></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 // 只需编辑这个文件即可调整站名和“常用软件”。
 window.siteConfig = {
-  title: "Glenn's轻首页",
+  title: "Glenn导航",
 
   commonApps: [
     { name: "ChatGPT", url: "https://chatgpt.com/" },

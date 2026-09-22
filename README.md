@@ -1,4 +1,4 @@
-# Glenn's轻首页
+# Glenn导航
 
 一个零依赖的个人搜索与网址导航首页，已适配桌面、平板和手机。页面支持 15 个搜索入口、网址直达、浅色/深色模式，并通过 GitHub Pages 自动发布。
 
@@ -10,7 +10,7 @@
 
 ```js
 window.siteConfig = {
-  title: "Glenn's轻首页",
+  title: "Glenn导航",
   commonApps: [
     { name: "ChatGPT", url: "https://chatgpt.com/" },
     { name: "GitHub", url: "https://github.com/" },
@@ -27,8 +27,9 @@ window.siteConfig = {
 - `config.js`：站名与可编辑的常用软件
 - `catalog.js`：固定的搜索引擎与分类导航
 - `app.js`：渲染、搜索、搜索引擎切换和主题逻辑
+- `assets/brand/glenn-cat.png`：页头品牌图标
 - `assets/search-icons/`：搜索服务的本地图标
-- `favicon.svg`：站点图标
+- `favicon.png`：浏览器标签页图标
 
 ## 本地预览
 
