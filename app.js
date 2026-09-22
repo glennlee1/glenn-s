@@ -5,6 +5,7 @@
     theme: "glenn-home-theme",
     engine: "glenn-home-search-engine",
     apps: "glenn-home-common-apps",
+    identity: "glenn-home-identity",
   };
   var DEFAULT_TITLE = "Glenn导航";
   var config = window.siteConfig && typeof window.siteConfig === "object"
@@ -17,6 +18,7 @@
   var elements = {
     siteDescription: document.getElementById("siteDescription"),
     brandLink: document.getElementById("brandLink"),
+    brandMark: document.getElementById("brandMark"),
     siteTitle: document.getElementById("siteTitle"),
     footerSiteTitle: document.getElementById("footerSiteTitle"),
     searchForm: document.getElementById("searchForm"),
@@ -31,6 +33,7 @@
     searchWrap: document.querySelector(".search-wrap"),
     navigationGrid: document.getElementById("navigationGrid"),
     themeToggle: document.getElementById("themeToggle"),
+    siteSettingsToggle: document.getElementById("siteSettingsToggle"),
     themeColor: document.getElementById("themeColor"),
     currentYear: document.getElementById("currentYear"),
     appEditor: document.getElementById("appEditor"),
@@ -43,6 +46,12 @@
     appEditorReset: document.getElementById("appEditorReset"),
     appEditorList: document.getElementById("appEditorList"),
     appEditorStatus: document.getElementById("appEditorStatus"),
+    siteIdentityForm: document.getElementById("siteIdentityForm"),
+    siteNameInput: document.getElementById("siteNameInput"),
+    siteAvatarInput: document.getElementById("siteAvatarInput"),
+    siteAvatarPreview: document.getElementById("siteAvatarPreview"),
+    siteAvatarReset: document.getElementById("siteAvatarReset"),
+    siteIdentityReset: document.getElementById("siteIdentityReset"),
   };
 
   function asArray(value) {
@@ -105,6 +114,18 @@
     return null;
   }
 
+  function safeAvatarUrl(value) {
+    if (typeof value !== "string" || !value.trim()) {
+      return null;
+    }
+
+    if (/^data:image\/(?:png|jpeg|webp);base64,/i.test(value.trim())) {
+      return value.trim();
+    }
+
+    return safeAssetUrl(value);
+  }
+
   function validLink(item) {
     if (!item || typeof item !== "object") {
       return null;
@@ -150,6 +171,38 @@
 
   commonApps = readCommonApps();
 
+  var defaultIdentity = {
+    title: asText(config.title, DEFAULT_TITLE),
+    avatar: "./assets/brand/glenn-cat.png",
+  };
+  var siteIdentity = null;
+  var pendingAvatar = defaultIdentity.avatar;
+
+  function readIdentity() {
+    var saved = readStorage(STORAGE_KEYS.identity);
+    if (saved === null) {
+      return { title: defaultIdentity.title, avatar: defaultIdentity.avatar };
+    }
+
+    try {
+      var parsed = JSON.parse(saved);
+      var avatar = safeAvatarUrl(parsed && parsed.avatar);
+      return {
+        title: asText(parsed && parsed.title, defaultIdentity.title),
+        avatar: avatar || defaultIdentity.avatar,
+      };
+    } catch (error) {
+      return { title: defaultIdentity.title, avatar: defaultIdentity.avatar };
+    }
+  }
+
+  function persistIdentity() {
+    writeStorage(STORAGE_KEYS.identity, JSON.stringify(siteIdentity));
+  }
+
+  siteIdentity = readIdentity();
+  pendingAvatar = siteIdentity.avatar;
+
   function validEngine(engine, index) {
     if (!engine || typeof engine !== "object") {
       return null;
@@ -183,10 +236,11 @@
   var selectedEngine = searchEngines[0] || null;
 
   function renderIdentity() {
-    var title = asText(config.title, DEFAULT_TITLE);
+    var title = siteIdentity.title;
     document.title = title;
     elements.siteDescription.content = title + " - 搜索与常用网站，一页直达";
     elements.brandLink.setAttribute("aria-label", "返回 " + title);
+    elements.brandMark.src = siteIdentity.avatar;
     elements.siteTitle.textContent = title;
     elements.footerSiteTitle.textContent = title;
     elements.currentYear.textContent = String(new Date().getFullYear());
@@ -281,6 +335,84 @@
     elements.navigationGrid.replaceChildren(fragment);
   }
 
+  function renderIdentityEditor() {
+    elements.siteNameInput.value = siteIdentity.title;
+    elements.siteAvatarPreview.src = siteIdentity.avatar;
+    elements.siteAvatarInput.value = "";
+    pendingAvatar = siteIdentity.avatar;
+  }
+
+  function prepareAvatar(file, onComplete) {
+    var reader = new FileReader();
+    reader.addEventListener("load", function () {
+      var image = new Image();
+      image.addEventListener("load", function () {
+        var side = Math.min(image.naturalWidth, image.naturalHeight);
+        var sourceX = (image.naturalWidth - side) / 2;
+        var sourceY = (image.naturalHeight - side) / 2;
+        var canvas = document.createElement("canvas");
+        var context = canvas.getContext("2d");
+
+        canvas.width = 256;
+        canvas.height = 256;
+        context.drawImage(image, sourceX, sourceY, side, side, 0, 0, 256, 256);
+        onComplete(canvas.toDataURL("image/png"));
+      });
+      image.addEventListener("error", function () {
+        setEditorStatus("头像读取失败，请换一张图片", true);
+      });
+      image.src = reader.result;
+    });
+    reader.addEventListener("error", function () {
+      setEditorStatus("头像读取失败，请换一张图片", true);
+    });
+    reader.readAsDataURL(file);
+  }
+
+  function handleAvatarChange(event) {
+    var file = event.target.files && event.target.files[0];
+    if (!file) {
+      return;
+    }
+
+    if (!/^image\/(?:png|jpeg|webp)$/i.test(file.type)) {
+      setEditorStatus("请选择 PNG、JPG 或 WebP 图片", true);
+      event.target.value = "";
+      return;
+    }
+
+    prepareAvatar(file, function (avatar) {
+      pendingAvatar = avatar;
+      elements.siteAvatarPreview.src = avatar;
+      setEditorStatus("头像已载入，保存站点设置后生效");
+    });
+  }
+
+  function handleIdentitySubmit(event) {
+    event.preventDefault();
+
+    var title = elements.siteNameInput.value.trim();
+    if (!title) {
+      setEditorStatus("请填写站点名称", true);
+      elements.siteNameInput.focus();
+      return;
+    }
+
+    siteIdentity = { title: title, avatar: pendingAvatar || defaultIdentity.avatar };
+    persistIdentity();
+    renderIdentity();
+    renderIdentityEditor();
+    setEditorStatus("已保存站点设置");
+  }
+
+  function resetIdentityEditor() {
+    elements.siteNameInput.value = defaultIdentity.title;
+    pendingAvatar = defaultIdentity.avatar;
+    elements.siteAvatarPreview.src = defaultIdentity.avatar;
+    elements.siteAvatarInput.value = "";
+    setEditorStatus("已填入默认站点设置，保存后生效");
+  }
+
   function setEditorStatus(message, isError) {
     elements.appEditorStatus.textContent = message || "";
     elements.appEditorStatus.classList.toggle("is-error", Boolean(isError));
@@ -362,6 +494,7 @@
   function openAppEditor() {
     editorReturnFocus = document.activeElement;
     resetAppEditorForm();
+    renderIdentityEditor();
     renderAppEditorList();
     elements.appEditor.hidden = false;
     document.body.classList.add("modal-open");
@@ -805,6 +938,16 @@
 
     elements.themeToggle.addEventListener("click", toggleTheme);
 
+    elements.siteSettingsToggle.addEventListener("click", openAppEditor);
+    elements.siteIdentityForm.addEventListener("submit", handleIdentitySubmit);
+    elements.siteAvatarInput.addEventListener("change", handleAvatarChange);
+    elements.siteAvatarReset.addEventListener("click", function () {
+      pendingAvatar = defaultIdentity.avatar;
+      elements.siteAvatarPreview.src = defaultIdentity.avatar;
+      elements.siteAvatarInput.value = "";
+      setEditorStatus("已恢复默认头像，保存后生效");
+    });
+    elements.siteIdentityReset.addEventListener("click", resetIdentityEditor);
     elements.appEditorForm.addEventListener("submit", handleAppEditorSubmit);
     elements.appEditorList.addEventListener("click", handleAppEditorListClick);
     elements.appEditorClose.addEventListener("click", closeAppEditor);

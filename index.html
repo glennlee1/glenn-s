@@ -38,9 +38,15 @@
     <header class="site-header">
       <div class="header-inner">
         <a id="brandLink" class="brand" href="./" aria-label="返回 Glenn导航">
-          <img class="brand-mark" src="./assets/brand/glenn-cat.png" alt="" width="40" height="40" />
+          <img id="brandMark" class="brand-mark" src="./assets/brand/glenn-cat.png" alt="" width="40" height="40" />
           <span id="siteTitle">Glenn导航</span>
         </a>
+        <button id="siteSettingsToggle" class="site-settings-toggle" type="button" aria-label="编辑导航" title="编辑导航">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path>
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -101,9 +107,12 @@
               </div>
 
               <p id="searchStatus" class="sr-only" aria-live="polite"></p>
-              <a class="search-featured" href="https://github.com/glennlee1" target="_blank" rel="noopener noreferrer">
-                <span aria-hidden="true">↗</span> Glenn 的 GitHub
-              </a>
+              <div class="search-featured" aria-label="豆包入口">
+                <span aria-hidden="true">↗</span>
+                <strong>要不问问豆包？</strong>
+                <a href="https://www.doubao.com/" target="_blank" rel="noopener noreferrer">主页</a>
+                <a href="https://www.doubao.com/chat/" target="_blank" rel="noopener noreferrer">对话</a>
+              </div>
             </div>
 
             <button
@@ -130,13 +139,40 @@
           <div class="app-editor-backdrop" data-editor-close></div>
           <div class="app-editor-dialog" role="dialog" aria-modal="true" aria-labelledby="appEditorTitle">
             <div class="app-editor-header">
-              <h2 id="appEditorTitle">编辑常用软件</h2>
+              <h2 id="appEditorTitle">编辑导航</h2>
               <button id="appEditorClose" class="icon-button" type="button" aria-label="关闭编辑器" title="关闭">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 6l12 12M18 6L6 18"></path>
                 </svg>
               </button>
             </div>
+
+            <section class="identity-editor" aria-labelledby="identityEditorTitle">
+              <div class="identity-editor-heading">
+                <h3 id="identityEditorTitle">站点设置</h3>
+                <span>名称和头像仅保存在当前浏览器</span>
+              </div>
+              <form id="siteIdentityForm" class="identity-editor-form" novalidate>
+                <div class="identity-editor-fields">
+                  <label>
+                    <span>站点名称</span>
+                    <input id="siteNameInput" name="siteName" type="text" maxlength="30" autocomplete="off" required />
+                  </label>
+                  <div class="avatar-field">
+                    <span>头像</span>
+                    <div class="avatar-editor-row">
+                      <img id="siteAvatarPreview" class="avatar-preview" src="./assets/brand/glenn-cat.png" alt="头像预览" width="48" height="48" />
+                      <input id="siteAvatarInput" type="file" accept="image/png,image/jpeg,image/webp" />
+                      <button id="siteAvatarReset" class="secondary-button" type="button">恢复头像</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="identity-editor-actions">
+                  <button id="siteIdentityReset" class="text-button" type="button">恢复默认名称</button>
+                  <button class="primary-button" type="submit">保存站点设置</button>
+                </div>
+              </form>
+            </section>
 
             <form id="appEditorForm" class="app-editor-form" novalidate>
               <div class="app-editor-fields">
