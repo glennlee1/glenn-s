@@ -1,22 +1,22 @@
-// 只需编辑这个文件即可调整站名和“常用软件”。
+// 页面可编辑“常用软件”；这里是恢复默认时使用的推荐清单。
 window.siteConfig = {
   title: "Glenn导航",
 
   commonApps: [
-    { name: "ChatGPT", url: "https://chatgpt.com/" },
-    { name: "GitHub", url: "https://github.com/" },
-    { name: "Notion", url: "https://www.notion.so/" },
-    { name: "Gmail", url: "https://mail.google.com/" },
-    { name: "哔哩哔哩", url: "https://www.bilibili.com/" },
-    { name: "YouTube", url: "https://www.youtube.com/" },
-    { name: "腾讯文档", url: "https://docs.qq.com/" },
-    { name: "Figma", url: "https://www.figma.com/" },
-    { name: "飞书", url: "https://www.feishu.cn/" },
-    { name: "钉钉", url: "https://www.dingtalk.com/" },
-    { name: "腾讯会议", url: "https://meeting.tencent.com/" },
-    { name: "百度网盘", url: "https://pan.baidu.com/" },
-    { name: "网易云音乐", url: "https://music.163.com/" },
-    { name: "知乎", url: "https://www.zhihu.com/" },
-    { name: "36氪", url: "https://36kr.com/" },
+    { name: "SteamDB", url: "https://steamdb.info/" },
+    { name: "VG Insights", url: "https://vginsights.com/" },
+    { name: "Steam Charts", url: "https://steamcharts.com/" },
+    { name: "SteamSpy", url: "https://steamspy.com/" },
+    { name: "data.ai", url: "https://www.data.ai/" },
+    { name: "Sensor Tower", url: "https://sensortower.com/" },
+    { name: "Newzoo", url: "https://newzoo.com/" },
+    { name: "Similarweb", url: "https://www.similarweb.com/" },
+    { name: "GameAnalytics", url: "https://gameanalytics.com/" },
+    { name: "AppsFlyer", url: "https://www.appsflyer.com/" },
+    { name: "Amplitude", url: "https://amplitude.com/" },
+    { name: "Mixpanel", url: "https://mixpanel.com/" },
+    { name: "Google Analytics", url: "https://analytics.google.com/" },
+    { name: "伽马数据", url: "https://www.gamabeta.com/" },
+    { name: "七麦数据", url: "https://www.qimai.cn/" },
   ],
 };

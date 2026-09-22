@@ -30,7 +30,7 @@
         document.documentElement.dataset.theme = theme;
       })();
     </script>
-    <link rel="stylesheet" href="./style.css?v=4" />
+    <link rel="stylesheet" href="./style.css?v=5" />
   </head>
   <body>
     <a class="skip-link" href="#searchInput">跳到搜索框</a>
@@ -125,6 +125,45 @@
         </section>
 
         <nav id="navigationGrid" class="navigation-grid" aria-label="常用网站导航"></nav>
+
+        <section id="appEditor" class="app-editor" hidden aria-labelledby="appEditorTitle">
+          <div class="app-editor-backdrop" data-editor-close></div>
+          <div class="app-editor-dialog" role="dialog" aria-modal="true" aria-labelledby="appEditorTitle">
+            <div class="app-editor-header">
+              <h2 id="appEditorTitle">编辑常用软件</h2>
+              <button id="appEditorClose" class="icon-button" type="button" aria-label="关闭编辑器" title="关闭">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6L6 18"></path>
+                </svg>
+              </button>
+            </div>
+
+            <form id="appEditorForm" class="app-editor-form" novalidate>
+              <div class="app-editor-fields">
+                <label>
+                  <span>名称</span>
+                  <input id="appNameInput" name="name" type="text" maxlength="30" autocomplete="off" required />
+                </label>
+                <label>
+                  <span>网址</span>
+                  <input id="appUrlInput" name="url" type="url" inputmode="url" autocomplete="url" placeholder="https://example.com/" required />
+                </label>
+              </div>
+              <div class="app-editor-form-actions">
+                <button id="appEditorCancel" class="secondary-button" type="button" hidden>取消编辑</button>
+                <button id="appEditorSubmit" class="primary-button" type="submit">添加到导航</button>
+              </div>
+              <p id="appEditorStatus" class="app-editor-status" role="status" aria-live="polite"></p>
+            </form>
+
+            <div class="app-editor-list-header">
+              <span>当前导航</span>
+              <button id="appEditorReset" class="text-button" type="button">恢复默认</button>
+            </div>
+            <ul id="appEditorList" class="app-editor-list"></ul>
+            <p class="app-editor-note">修改仅保存在当前浏览器。</p>
+          </div>
+        </section>
       </div>
     </main>
 
@@ -140,8 +179,8 @@
       <p class="noscript-message">此页面需要启用 JavaScript 才能显示导航内容。</p>
     </noscript>
 
-    <script src="./config.js?v=4" defer></script>
-    <script src="./catalog.js?v=4" defer></script>
-    <script src="./app.js?v=4" defer></script>
+    <script src="./config.js?v=5" defer></script>
+    <script src="./catalog.js?v=5" defer></script>
+    <script src="./app.js?v=5" defer></script>
   </body>
 </html>

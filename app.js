@@ -4,6 +4,7 @@
   var STORAGE_KEYS = {
     theme: "glenn-home-theme",
     engine: "glenn-home-search-engine",
+    apps: "glenn-home-common-apps",
   };
   var DEFAULT_TITLE = "Glenn导航";
   var config = window.siteConfig && typeof window.siteConfig === "object"
@@ -32,6 +33,16 @@
     themeToggle: document.getElementById("themeToggle"),
     themeColor: document.getElementById("themeColor"),
     currentYear: document.getElementById("currentYear"),
+    appEditor: document.getElementById("appEditor"),
+    appEditorForm: document.getElementById("appEditorForm"),
+    appNameInput: document.getElementById("appNameInput"),
+    appUrlInput: document.getElementById("appUrlInput"),
+    appEditorSubmit: document.getElementById("appEditorSubmit"),
+    appEditorCancel: document.getElementById("appEditorCancel"),
+    appEditorClose: document.getElementById("appEditorClose"),
+    appEditorReset: document.getElementById("appEditorReset"),
+    appEditorList: document.getElementById("appEditorList"),
+    appEditorStatus: document.getElementById("appEditorStatus"),
   };
 
   function asArray(value) {
@@ -110,6 +121,35 @@
     };
   }
 
+  var defaultCommonApps = asArray(config.commonApps)
+    .map(validLink)
+    .filter(Boolean);
+  var commonApps = [];
+  var editingAppIndex = -1;
+  var editorReturnFocus = null;
+
+  function readCommonApps() {
+    var saved = readStorage(STORAGE_KEYS.apps);
+    if (saved === null) {
+      return defaultCommonApps.slice();
+    }
+
+    try {
+      var parsed = JSON.parse(saved);
+      return Array.isArray(parsed)
+        ? parsed.map(validLink).filter(Boolean)
+        : defaultCommonApps.slice();
+    } catch (error) {
+      return defaultCommonApps.slice();
+    }
+  }
+
+  function persistCommonApps() {
+    writeStorage(STORAGE_KEYS.apps, JSON.stringify(commonApps));
+  }
+
+  commonApps = readCommonApps();
+
   function validEngine(engine, index) {
     if (!engine || typeof engine !== "object") {
       return null;
@@ -167,7 +207,7 @@
     return link;
   }
 
-  function createNavigationGroup(name, items) {
+  function createNavigationGroup(name, items, editable) {
     var section = document.createElement("section");
     var heading = document.createElement("h2");
     var list = document.createElement("ul");
@@ -177,6 +217,25 @@
     heading.className = "navigation-title";
     heading.textContent = asText(name, "未命名分类");
     list.className = "navigation-list";
+
+    if (editable) {
+      var headingRow = document.createElement("div");
+      var editButton = document.createElement("button");
+
+      headingRow.className = "navigation-title-row";
+      editButton.type = "button";
+      editButton.className = "navigation-edit";
+      editButton.title = "编辑常用软件";
+      editButton.setAttribute("aria-label", "编辑常用软件");
+      editButton.innerHTML =
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>';
+      editButton.addEventListener("click", openAppEditor);
+      headingRow.appendChild(heading);
+      headingRow.appendChild(editButton);
+      section.appendChild(headingRow);
+    } else {
+      section.appendChild(heading);
+    }
 
     asArray(items).forEach(function (item) {
       var link = createNavigationLink(item);
@@ -190,7 +249,6 @@
       validCount += 1;
     });
 
-    section.appendChild(heading);
     if (validCount) {
       section.appendChild(list);
     } else {
@@ -207,7 +265,7 @@
     var fragment = document.createDocumentFragment();
 
     fragment.appendChild(
-      createNavigationGroup("常用软件", asArray(config.commonApps))
+      createNavigationGroup("常用软件", commonApps, true)
     );
 
     asArray(catalog.categories).forEach(function (category) {
@@ -221,6 +279,198 @@
     });
 
     elements.navigationGrid.replaceChildren(fragment);
+  }
+
+  function setEditorStatus(message, isError) {
+    elements.appEditorStatus.textContent = message || "";
+    elements.appEditorStatus.classList.toggle("is-error", Boolean(isError));
+  }
+
+  function resetAppEditorForm() {
+    editingAppIndex = -1;
+    elements.appEditorForm.reset();
+    elements.appEditorCancel.hidden = true;
+    elements.appEditorSubmit.textContent = "添加到导航";
+    setEditorStatus("");
+  }
+
+  function createEditorAction(label, title, icon) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = "icon-button app-list-action";
+    button.dataset.appAction = label;
+    button.title = title;
+    button.setAttribute("aria-label", title);
+    button.innerHTML = icon;
+    return button;
+  }
+
+  function renderAppEditorList() {
+    var fragment = document.createDocumentFragment();
+
+    if (!commonApps.length) {
+      var empty = document.createElement("li");
+      empty.className = "app-editor-empty";
+      empty.textContent = "还没有添加软件";
+      fragment.appendChild(empty);
+    }
+
+    commonApps.forEach(function (app, index) {
+      var item = document.createElement("li");
+      var details = document.createElement("div");
+      var name = document.createElement("strong");
+      var link = document.createElement("a");
+      var actions = document.createElement("div");
+
+      item.className = "app-editor-item";
+      details.className = "app-editor-item-details";
+      name.className = "app-editor-item-name";
+      name.textContent = app.name;
+      link.className = "app-editor-item-url";
+      link.href = app.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.title = app.url;
+      link.textContent = app.url;
+      actions.className = "app-editor-item-actions";
+
+      var editButton = createEditorAction(
+        "edit",
+        "编辑" + app.name,
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>'
+      );
+      var deleteButton = createEditorAction(
+        "delete",
+        "删除" + app.name,
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5M14 11v5"></path></svg>'
+      );
+      editButton.dataset.appIndex = String(index);
+      deleteButton.dataset.appIndex = String(index);
+
+      details.appendChild(name);
+      details.appendChild(link);
+      actions.appendChild(editButton);
+      actions.appendChild(deleteButton);
+      item.appendChild(details);
+      item.appendChild(actions);
+      fragment.appendChild(item);
+    });
+
+    elements.appEditorList.replaceChildren(fragment);
+  }
+
+  function openAppEditor() {
+    editorReturnFocus = document.activeElement;
+    resetAppEditorForm();
+    renderAppEditorList();
+    elements.appEditor.hidden = false;
+    document.body.classList.add("modal-open");
+    elements.appNameInput.focus();
+  }
+
+  function closeAppEditor() {
+    elements.appEditor.hidden = true;
+    document.body.classList.remove("modal-open");
+    resetAppEditorForm();
+
+    var focusTarget = editorReturnFocus;
+    if (!focusTarget || !document.contains(focusTarget)) {
+      focusTarget = document.querySelector(".navigation-edit");
+    }
+    if (focusTarget && typeof focusTarget.focus === "function") {
+      focusTarget.focus();
+    }
+    editorReturnFocus = null;
+  }
+
+  function startEditingApp(index) {
+    var app = commonApps[index];
+    if (!app) {
+      return;
+    }
+
+    editingAppIndex = index;
+    elements.appNameInput.value = app.name;
+    elements.appUrlInput.value = app.url;
+    elements.appEditorCancel.hidden = false;
+    elements.appEditorSubmit.textContent = "保存修改";
+    setEditorStatus("");
+    elements.appNameInput.focus();
+  }
+
+  function deleteApp(index) {
+    var app = commonApps[index];
+    if (!app || !window.confirm("确定删除“" + app.name + "”吗？")) {
+      return;
+    }
+
+    commonApps.splice(index, 1);
+    persistCommonApps();
+    renderNavigation();
+    renderAppEditorList();
+    resetAppEditorForm();
+    setEditorStatus("已删除");
+  }
+
+  function restoreDefaultApps() {
+    if (!window.confirm("恢复默认推荐会覆盖当前常用软件，确定继续吗？")) {
+      return;
+    }
+
+    commonApps = defaultCommonApps.slice();
+    persistCommonApps();
+    renderNavigation();
+    renderAppEditorList();
+    resetAppEditorForm();
+    setEditorStatus("已恢复默认推荐");
+  }
+
+  function handleAppEditorSubmit(event) {
+    event.preventDefault();
+
+    var name = elements.appNameInput.value.trim();
+    var url = safeHttpUrl(elements.appUrlInput.value);
+    if (!name) {
+      setEditorStatus("请填写名称", true);
+      elements.appNameInput.focus();
+      return;
+    }
+
+    if (!url) {
+      setEditorStatus("请输入有效的 http:// 或 https:// 网址", true);
+      elements.appUrlInput.focus();
+      return;
+    }
+
+    var app = { name: name, url: url };
+    var statusMessage = "";
+    if (editingAppIndex >= 0 && commonApps[editingAppIndex]) {
+      commonApps[editingAppIndex] = app;
+      statusMessage = "已保存修改";
+    } else {
+      commonApps.push(app);
+      statusMessage = "已添加到导航";
+    }
+
+    persistCommonApps();
+    renderNavigation();
+    renderAppEditorList();
+    resetAppEditorForm();
+    setEditorStatus(statusMessage);
+  }
+
+  function handleAppEditorListClick(event) {
+    var button = event.target.closest("button[data-app-action]");
+    if (!button || !elements.appEditorList.contains(button)) {
+      return;
+    }
+
+    var index = Number(button.dataset.appIndex);
+    if (button.dataset.appAction === "edit") {
+      startEditingApp(index);
+    } else if (button.dataset.appAction === "delete") {
+      deleteApp(index);
+    }
   }
 
   function applyBadgeStyle(node, engine) {
@@ -525,6 +775,12 @@
     });
 
     document.addEventListener("keydown", function (event) {
+      if (!elements.appEditor.hidden && event.key === "Escape") {
+        event.preventDefault();
+        closeAppEditor();
+        return;
+      }
+
       if (event.key === "Escape" && !elements.enginePanel.hidden) {
         event.preventDefault();
         closeEnginePanel({ focusToggle: true });
@@ -548,6 +804,17 @@
     });
 
     elements.themeToggle.addEventListener("click", toggleTheme);
+
+    elements.appEditorForm.addEventListener("submit", handleAppEditorSubmit);
+    elements.appEditorList.addEventListener("click", handleAppEditorListClick);
+    elements.appEditorClose.addEventListener("click", closeAppEditor);
+    elements.appEditorCancel.addEventListener("click", resetAppEditorForm);
+    elements.appEditorReset.addEventListener("click", restoreDefaultApps);
+    elements.appEditor.addEventListener("click", function (event) {
+      if (event.target.closest("[data-editor-close]")) {
+        closeAppEditor();
+      }
+    });
   }
 
   renderIdentity();
