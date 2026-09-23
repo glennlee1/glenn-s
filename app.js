@@ -10,8 +10,43 @@
     navigationVersion: "glenn-home-navigation-version",
   };
   var DEFAULT_TITLE = "Glenn导航";
-  var NAVIGATION_DEFAULT_VERSION = "cn-game-analytics-2";
+  var NAVIGATION_DEFAULT_VERSION = "bookmark-data-1";
   var MAX_NAVIGATION_LINKS = 15;
+  var LEGACY_COMMON_DEFAULT_URLS = [
+    "https://www.gamadata.com.cn/",
+    "https://www.dataeye.com/",
+    "https://www.diandian.com/",
+    "https://www.qimai.cn/",
+    "https://www.chandashi.com/",
+    "https://appgrowing.cn/",
+    "https://www.talkingdata.com/",
+    "https://www.questmobile.com.cn/",
+    "https://index.oceanengine.com/",
+    "https://index.baidu.com/",
+    "https://www.umeng.com/",
+    "https://www.sensorsdata.cn/",
+    "https://www.growingio.com/",
+    "https://steamdb.info/",
+    "https://vginsights.com/",
+  ];
+  var LEGACY_ACADEMIC_DEFAULT_URLS = [
+    "https://xueshu.baidu.com/",
+    "https://www.cnki.net/",
+    "https://www.wanfangdata.com.cn/",
+    "https://www.cqvip.com/",
+    "https://www.ncpssd.org/",
+    "https://www.stats.gov.cn/",
+    "https://www.gov.cn/",
+    "https://www.icourse163.org/",
+    "https://www.xuetangx.com/",
+    "https://scholar.google.com/",
+    "https://www.webofscience.com/",
+    "https://www.semanticscholar.org/",
+    "https://arxiv.org/",
+    "https://www.coursera.org/",
+    "https://www.edx.org/",
+    "https://zh.wikipedia.org/",
+  ];
   var config = window.siteConfig && typeof window.siteConfig === "object"
     ? window.siteConfig
     : {};
@@ -157,6 +192,23 @@
       .slice(0, MAX_NAVIGATION_LINKS);
   }
 
+  function buildUrlSet(items) {
+    var urls = {};
+
+    asArray(items).forEach(function (item) {
+      var value = typeof item === "string" ? item : item && item.url;
+      var url = safeHttpUrl(value);
+      if (url) {
+        urls[url] = true;
+      }
+    });
+
+    return urls;
+  }
+
+  var legacyCommonDefaultUrls = buildUrlSet(LEGACY_COMMON_DEFAULT_URLS);
+  var legacyAcademicDefaultUrls = buildUrlSet(LEGACY_ACADEMIC_DEFAULT_URLS);
+
   var defaultCommonApps = normalizeLinks(config.commonApps);
   var defaultNavigationGroups = [
     { id: "common", name: "常用软件", links: defaultCommonApps },
@@ -198,6 +250,13 @@
       var defaultUrls = {};
       var customUrls = {};
       var customLinks = [];
+      var isCommonMigration = defaultGroup.id === "common";
+      var isDataMigration = defaultGroup.name === "数据 · 分析" && savedGroup && (
+        savedGroup.name === "学术 · 学习" || savedGroup.id === "category-2"
+      );
+      var ignoredLegacyUrls = isCommonMigration
+        ? legacyCommonDefaultUrls
+        : (isDataMigration ? legacyAcademicDefaultUrls : {});
 
       defaultLinks.forEach(function (link) {
         defaultUrls[link.url] = true;
@@ -205,7 +264,12 @@
 
       (savedGroup ? savedGroup.links : []).forEach(function (item) {
         var link = validLink(item);
-        if (!link || defaultUrls[link.url] || customUrls[link.url]) {
+        if (
+          !link ||
+          defaultUrls[link.url] ||
+          ignoredLegacyUrls[link.url] ||
+          customUrls[link.url]
+        ) {
           return;
         }
 
@@ -225,7 +289,9 @@
 
       return {
         id: defaultGroup.id,
-        name: savedGroup ? asText(savedGroup.name, defaultGroup.name) : defaultGroup.name,
+        name: isDataMigration && savedGroup.name === "学术 · 学习"
+          ? defaultGroup.name
+          : (savedGroup ? asText(savedGroup.name, defaultGroup.name) : defaultGroup.name),
         links: mergedLinks,
       };
     });
@@ -247,6 +313,7 @@
             var migratedGroups = cloneNavigationGroups(defaultNavigationGroups);
             migratedGroups[0].links = normalizeLinks(parsedLegacyApps);
             var mergedLegacyGroups = mergeNavigationGroups(migratedGroups);
+            writeStorage(STORAGE_KEYS.navigation, JSON.stringify(mergedLegacyGroups));
             rememberNavigationVersion();
             return mergedLegacyGroups;
           }
@@ -267,6 +334,7 @@
 
       if (savedVersion !== NAVIGATION_DEFAULT_VERSION) {
         var mergedGroups = mergeNavigationGroups(parsed);
+        writeStorage(STORAGE_KEYS.navigation, JSON.stringify(mergedGroups));
         rememberNavigationVersion();
         return mergedGroups;
       }
