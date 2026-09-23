@@ -10,7 +10,8 @@
     navigationVersion: "glenn-home-navigation-version",
   };
   var DEFAULT_TITLE = "Glenn导航";
-  var NAVIGATION_DEFAULT_VERSION = "cn-game-analytics-1";
+  var NAVIGATION_DEFAULT_VERSION = "cn-game-analytics-2";
+  var MAX_NAVIGATION_LINKS = 15;
   var config = window.siteConfig && typeof window.siteConfig === "object"
     ? window.siteConfig
     : {};
@@ -149,9 +150,14 @@
     };
   }
 
-  var defaultCommonApps = asArray(config.commonApps)
-    .map(validLink)
-    .filter(Boolean);
+  function normalizeLinks(items) {
+    return asArray(items)
+      .map(validLink)
+      .filter(Boolean)
+      .slice(0, MAX_NAVIGATION_LINKS);
+  }
+
+  var defaultCommonApps = normalizeLinks(config.commonApps);
   var defaultNavigationGroups = [
     { id: "common", name: "常用软件", links: defaultCommonApps },
   ];
@@ -163,7 +169,7 @@
     defaultNavigationGroups.push({
       id: "category-" + index,
       name: asText(category.name, "未命名分类"),
-      links: asArray(category.links).map(validLink).filter(Boolean),
+      links: normalizeLinks(category.links),
     });
   });
 
@@ -178,7 +184,7 @@
       return {
         id: asText(group.id, "group-" + index),
         name: asText(group.name, "未命名分类"),
-        links: asArray(group.links).map(validLink).filter(Boolean),
+        links: normalizeLinks(group.links),
       };
     });
   }
@@ -188,18 +194,33 @@
 
     return defaultNavigationGroups.map(function (defaultGroup, index) {
       var savedGroup = saved[index];
-      var seenUrls = {};
-      var mergedLinks = [];
-      var candidateLinks = defaultGroup.links.concat(savedGroup ? savedGroup.links : []);
+      var defaultLinks = normalizeLinks(defaultGroup.links);
+      var defaultUrls = {};
+      var customUrls = {};
+      var customLinks = [];
 
-      candidateLinks.forEach(function (item) {
+      defaultLinks.forEach(function (link) {
+        defaultUrls[link.url] = true;
+      });
+
+      (savedGroup ? savedGroup.links : []).forEach(function (item) {
         var link = validLink(item);
-        if (!link || seenUrls[link.url]) {
+        if (!link || defaultUrls[link.url] || customUrls[link.url]) {
           return;
         }
 
-        seenUrls[link.url] = true;
-        mergedLinks.push(link);
+        customUrls[link.url] = true;
+        customLinks.push(link);
+      });
+
+      var mergedLinks = defaultLinks.slice(0, MAX_NAVIGATION_LINKS);
+      customLinks.forEach(function (link) {
+        if (mergedLinks.length < MAX_NAVIGATION_LINKS) {
+          mergedLinks.push(link);
+          return;
+        }
+
+        mergedLinks[mergedLinks.length - 1] = link;
       });
 
       return {
@@ -224,7 +245,7 @@
           var parsedLegacyApps = JSON.parse(legacyApps);
           if (Array.isArray(parsedLegacyApps)) {
             var migratedGroups = cloneNavigationGroups(defaultNavigationGroups);
-            migratedGroups[0].links = parsedLegacyApps.map(validLink).filter(Boolean);
+            migratedGroups[0].links = normalizeLinks(parsedLegacyApps);
             var mergedLegacyGroups = mergeNavigationGroups(migratedGroups);
             rememberNavigationVersion();
             return mergedLegacyGroups;
@@ -694,6 +715,11 @@
     var group = currentNavigationGroup();
     if (!group) {
       setEditorStatus("当前模块不可用，请重新打开编辑器", true);
+      return;
+    }
+
+    if (editingAppIndex < 0 && group.links.length >= MAX_NAVIGATION_LINKS) {
+      setEditorStatus("每个模块最多保留15个网址", true);
       return;
     }
 
